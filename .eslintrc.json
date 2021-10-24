@@ -1,0 +1,125 @@
+{
+    "root": true,
+    "env": {
+      "browser": true,
+      "es6": true,
+      "node": true
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "project": "./tsconfig.json", // tells parser relative path of tsconfig.json
+      "ecmaFeatures": {
+        "jsx": true
+      },
+      "ecmaVersion": 12,
+      "sourceType": "module"
+    },
+  
+    // all plugins (eslint-plugin-xxx) go here:
+    "plugins": [
+      "@typescript-eslint",
+      "@next/eslint-plugin-next" // https://github.com/vercel/next.js/blob/canary/packages/eslint-plugin-next/lib/index.js
+    ],
+  
+    // all configs (eslint-config-xxx) go here:
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:@typescript-eslint/recommended-requiring-type-checking", // contains rules that specifically require type information
+      "plugin:@next/next/recommended",
+      "next", // https://github.com/vercel/next.js/blob/canary/packages/eslint-config-next/package.json
+      "next/core-web-vitals"
+    ],
+    "rules": {
+        "strict": 0,
+        "indent": [
+            "error",
+            2
+        ],
+        "max-len": [
+            "warn",
+            {
+                "code": 110,
+                "ignoreStrings": true,
+                "ignoreTemplateLiterals": true
+            }
+        ],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "warn",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "never"
+        ],
+        "no-unused-vars": "warn",
+        "no-constant-condition": "warn",
+        "space-in-parens": [
+            "error",
+            "always",
+            {
+                "exceptions": ["{}", "[]", "()"]
+            }
+        ],
+        "array-bracket-spacing": [
+            "error",
+            "always",
+            {
+                "singleValue": true,
+                "objectsInArrays": false,
+                "arraysInArrays": false
+            }
+        ],
+        "object-curly-spacing": [
+            "error",
+            "always",
+            {
+                "arraysInObjects": false,
+                "objectsInObjects": false
+            }
+        ],
+        "key-spacing": ["error", {"beforeColon": false, "afterColon": true}],
+        "computed-property-spacing": ["error", "never"],
+        "space-infix-ops": "error",
+        "arrow-parens": ["error", "as-needed"],
+        "no-var": "error",
+        "newline-before-return": "error",
+        "prefer-const": ["error", { "destructuring": "any" }],
+        "comma-spacing": ["error", { "before": false, "after": true }],
+        "comma-dangle": ["error", "always-multiline"],
+        "eol-last": ["error", "always"],
+        "prefer-destructuring": [
+            "error",
+            {
+                "array": false,
+                "object": true
+            },
+            { "enforceForRenamedProperties": false }
+        ],
+        "no-trailing-spaces": ["error", { "ignoreComments": true }],
+        "no-console": "warn",
+        "curly": ["error", "all"],
+        "no-unexpected-multiline": "off",
+
+        "react/jsx-curly-spacing": ["error", "always"],
+        "react/display-name": 0,
+        "react/jsx-tag-spacing": "error",
+        "react/jsx-closing-bracket-location": "error",
+        "react/no-find-dom-node": "off",
+
+        "jest/no-disabled-tests": "warn",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/valid-expect": "error"
+    }
+  }
