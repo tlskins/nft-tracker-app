@@ -16,7 +16,7 @@ export interface ICollectionTracker {
     id: string;
     collection: string;
     floorPrice: IFloorPrice;
-    lasDayFloor: IFloorPrice;
+    lastDayFloor: IFloorPrice;
     lastWeekFloor: IFloorPrice;
     lastUpdated: Moment.Moment;
     hourlySales: number | undefined;
@@ -39,7 +39,7 @@ export interface ICollectionTracker {
       marketplace: string;
       rank: number | undefined;
       price: number;
-      rarity: number | undefined;
+      rarity: string | undefined;
       suggestedPrice: number | undefined;
       marketFloor: number | undefined;
       lastSoldPrice: number | undefined;

@@ -8,6 +8,7 @@ import {
   Container,
   Avatar,
   useColorModeValue,
+  Center,
 } from '@chakra-ui/react';
 import CollectionTrackerDataService from "../services/collectionTracker.service"
 import { ICollectionTracker } from '../types/collectionTracker';
@@ -89,6 +90,14 @@ const TestimonialAvatar = ({
 
 export default function Homepage() {
   const [tracker, setTracker] = useState(undefined as ICollectionTracker | undefined)
+  const {
+    currentBest,
+    floorPrice: currentFloor,
+    lastDayFloor,
+    lastWeekFloor,
+    hourlySales,
+    averageSalesPrice,
+  } = tracker || {}
 
   useEffect(() => {
     (async function loadCollectionTracker() {
@@ -101,64 +110,78 @@ export default function Homepage() {
 
   console.log('tracker', tracker)
 
+  if ( !tracker ) {
+    return(
+      <Box bg={useColorModeValue('gray.100', 'gray.700')}>
+        <Container maxW={'7xl'} py={16} as={Stack} spacing={12}>
+        </Container>
+      </Box>
+    )
+  }
+
   return (
     <Box bg={useColorModeValue('gray.100', 'gray.700')}>
       <Container maxW={'7xl'} py={16} as={Stack} spacing={12}>
         <Stack spacing={0} align={'center'}>
           <Heading>{ tracker?.collection }</Heading>
-          <Text>We have been working with clients around the world</Text>
+          {/* <Text>We have been working with clients around the world</Text> */}
         </Stack>
+
         <Stack
           direction={{ base: 'column', md: 'row' }}
+          justify="center"
+          justifyContent="center"
           spacing={{ base: 10, md: 4, lg: 10 }}>
-          <Testimonial>
-            <TestimonialContent>
-              <TestimonialHeading>Efficient Collaborating</TestimonialHeading>
-              <TestimonialText>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Auctor
-                neque sed imperdiet nibh lectus feugiat nunc sem.
-              </TestimonialText>
-            </TestimonialContent>
-            <TestimonialAvatar
-              src={
-                'https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'
-              }
-              name={'Jane Cooper'}
-              title={'CEO at ABC Corporation'}
-            />
-          </Testimonial>
-          <Testimonial>
-            <TestimonialContent>
-              <TestimonialHeading>Intuitive Design</TestimonialHeading>
-              <TestimonialText>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Auctor
-                neque sed imperdiet nibh lectus feugiat nunc sem.
-              </TestimonialText>
-            </TestimonialContent>
-            <TestimonialAvatar
-              src={
-                'https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'
-              }
-              name={'Jane Cooper'}
-              title={'CEO at ABC Corporation'}
-            />
-          </Testimonial>
-          <Testimonial>
-            <TestimonialContent>
-              <TestimonialHeading>Mindblowing Service</TestimonialHeading>
-              <TestimonialText>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Auctor
-                neque sed imperdiet nibh lectus feugiat nunc sem.
-              </TestimonialText>
-            </TestimonialContent>
-            <TestimonialAvatar
-              src={
-                'https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80'
-              }
-              name={'Jane Cooper'}
-              title={'CEO at ABC Corporation'}
-            />
-          </Testimonial>
+
+            <Testimonial>
+              <TestimonialContent>
+                <TestimonialHeading>
+                  Floors 
+                </TestimonialHeading>
+                <TestimonialText>
+                  <Container w="100%">
+                    Current { currentFloor.floorPrice } { currentFloor.percentChange && `(${currentFloor.percentChange.toFixed(2)}%)` }<br />
+                    Last Day Avg { lastDayFloor.floorPrice } { lastDayFloor.percentChange && `(${lastDayFloor.percentChange.toFixed(2)}%)` }<br />
+                    Last Week Avg { lastWeekFloor.floorPrice }<br />
+                  </Container>
+                </TestimonialText>
+              </TestimonialContent>
+            </Testimonial>
+
+            <Testimonial>
+              <TestimonialContent>
+                <TestimonialHeading>
+                  Best 
+                </TestimonialHeading>
+                <TestimonialText>
+                  <Container w="100%">
+                    Current Best: { currentBest.title } <br />
+                    { currentBest.rarity } @ { currentBest.price.toFixed(2) }<br />
+                    Score: { currentBest.score.toFixed(2) } | Suggested Price: { currentBest.suggestedPrice.toFixed( 2 ) }<br />
+                  </Container>
+                </TestimonialText>
+              </TestimonialContent>
+              <TestimonialAvatar
+                src={ currentBest.image }
+                name={currentBest.title}
+                title={currentBest.rarity}
+              />
+            </Testimonial>
+          
+            <Testimonial>
+              <TestimonialContent>
+                <TestimonialHeading>
+                  Volume 
+                </TestimonialHeading>
+                <TestimonialText>
+                  <Container w="100%">
+                    Hourly Sales: { hourlySales?.toFixed( 2 ) || "N/A" }<br />
+                    Last Week Avg { lastWeekFloor.floorPrice || "N/A" }<br />
+                  </Container>
+                </TestimonialText>
+              </TestimonialContent>
+            </Testimonial>
+
         </Stack>
       </Container>
     </Box>
