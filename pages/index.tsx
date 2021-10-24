@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import {
   Box,
   Flex,
@@ -9,6 +9,8 @@ import {
   Avatar,
   useColorModeValue,
 } from '@chakra-ui/react';
+import CollectionTrackerDataService from "../services/collectionTracker.service"
+import { ICollectionTracker } from '../types/collectionTracker';
 
 const Testimonial = ({ children }: { children: ReactNode }) => {
   return <Box>{children}</Box>;
@@ -86,11 +88,24 @@ const TestimonialAvatar = ({
 };
 
 export default function Homepage() {
+  const [tracker, setTracker] = useState(undefined as ICollectionTracker | undefined)
+
+  useEffect(() => {
+    (async function loadCollectionTracker() {
+      const tracker = await CollectionTrackerDataService.get("jungle-cats")
+      console.log('loaded', tracker)
+
+      if ( tracker ) setTracker(tracker)
+      })();
+  }, []);
+
+  console.log('tracker', tracker)
+
   return (
     <Box bg={useColorModeValue('gray.100', 'gray.700')}>
       <Container maxW={'7xl'} py={16} as={Stack} spacing={12}>
         <Stack spacing={0} align={'center'}>
-          <Heading>Our Clients Speak</Heading>
+          <Heading>{ tracker?.collection }</Heading>
           <Text>We have been working with clients around the world</Text>
         </Stack>
         <Stack
