@@ -8,7 +8,6 @@ import {
   Button,
   Image,
   Icon,
-  IconButton,
   createIcon,
   IconProps,
   useColorModeValue,
