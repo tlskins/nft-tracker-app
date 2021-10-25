@@ -49,7 +49,7 @@ export default function CallToActionWithVideo() {
             </Text>
             <br />
             <Text as={ 'span' } color={ 'red.400' }>
-              Push listings, in depth market analysis!
+              Track NFTs from your phone!
             </Text>
           </Heading>
           <Text color={ 'gray.500' }>
