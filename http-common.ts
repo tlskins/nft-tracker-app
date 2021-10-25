@@ -1,8 +1,8 @@
-import axios from "axios"
+import axios from 'axios'
 
 export default axios.create({
-  baseURL: "https://v4mps60z1i.execute-api.us-east-1.amazonaws.com/dev",
+  baseURL: process.env.NEXT_PUBLIC_API_HOST,
   headers: {
-    "Content-type": "application/json"
-  }
-});
+    'Content-type': 'application/json',
+  },
+})

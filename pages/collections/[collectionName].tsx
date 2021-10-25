@@ -101,7 +101,7 @@ export default function Homepage() {
                       { currentBest.title } <br />
                       { currentBest.rarity } @ { currentBest.price.toFixed( 2 ) }<br />
                     Score: { currentBest.score.toFixed( 2 ) } |
-                    Suggested Price: { currentBest.suggestedPrice.toFixed( 2 ) }<br />
+                    Suggested Price: { currentBest.suggestedPrice?.toFixed( 2 ) || "?" }<br />
                     </Container>
                   </TestimonialText>
                 </TestimonialContent>

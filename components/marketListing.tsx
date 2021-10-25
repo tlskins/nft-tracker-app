@@ -131,7 +131,7 @@ function MarketListingHighlights({ listing, currentRank }: { listing: IMarketLis
       />
       <SmallStatsCard
         title="Suggested Price"
-        stat={ `${listing.suggestedPrice.toFixed( 2 )}` }
+        stat={ `${listing.suggestedPrice?.toFixed( 2 ) || '?'}` }
       />
       <SmallStatsCard
         title="Score"
@@ -186,8 +186,8 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
             pl="2"
           >
             <SimpleGrid columns={ 2 } spacing={ 0 }>
-              <Text> Suggested Price </Text> <Text> { rarityValue.suggestedPrice.toFixed( 2 ) } SOL </Text>
-              <Text> Rarity </Text> <Text> { rarityValue.rarity } </Text>
+              <Text> Suggested Price </Text> <Text> { rarityValue.suggestedPrice?.toFixed( 2 ) || '?' } SOL </Text>
+              <Text> Rarity </Text> <Text> { rarityValue.rarity || '?' } </Text>
               <Text> Total Daily Sales </Text> <Text> { rarityValue.totalDailySales } </Text>
               { rarityValue.totalDailySales !== 0 &&
                 <>
@@ -600,9 +600,11 @@ export function CollapsedMarketListing({ listing, currentRank, onClick }: Collap
               >
                 <Box justifyContent="space-between" alignContent="center" align="center" width="100%">
                   <MarketListingHighlights listing={ listing } currentRank={ currentRank } />
-                  <Text mt={ 6 } textTransform="uppercase" letterSpacing={ 1.1 } color="gray.700" textStyle="bold">
-                    { listing.topAttributes.map( attr => attr.value ).join( ', ' ) }
-                  </Text>
+                  { listing.topAttributes?.length > 0 &&
+                    <Text mt={ 6 } textTransform="uppercase" letterSpacing={ 1.1 } color="gray.700" textStyle="bold">
+                      { listing.topAttributes.map( attr => attr.value ).join( ', ' ) }
+                    </Text>
+                  }
                 </Box>
               </Box>
             </Flex>
