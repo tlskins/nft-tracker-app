@@ -116,7 +116,7 @@ function SmallStatsCard({ title, stat }: StatsCardProps ) {
 
 function MarketListingHighlights({ listing, currentRank }: { listing: IMarketListing, currentRank: number }) {
   return(
-    <SimpleGrid columns={ { base: 1, md: 4 } } spacing={ { base: 2, lg: 3 } }>
+    <SimpleGrid columns={ { base: 1, md: 6 } } spacing={ { base: 2, lg: 3 } }>
       <SmallStatsCard
         title="Current Rank"
         stat={ `#${ currentRank }` }
@@ -128,6 +128,10 @@ function MarketListingHighlights({ listing, currentRank }: { listing: IMarketLis
       <SmallStatsCard
         title="Marketplace"
         stat={ listing.marketplace }
+      />
+      <SmallStatsCard
+        title="Suggested Price"
+        stat={ `${listing.suggestedPrice.toFixed( 2 )}` }
       />
       <SmallStatsCard
         title="Score"
