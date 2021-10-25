@@ -287,16 +287,16 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
             None
           </Text>
       }
-      { rarityValue?.currentListings.map( sale => {
+      { rarityValue?.currentListings.map(( sale, i ) => {
         return(
           <Grid
+            key={ i }
             columns={ 4 }
             templateColumns="repeat(4, 1fr)"
             mt={ 1 }
             direction={ 'row' }
             spacing={ 4 }
             align={ 'left' }
-            key={ sale.id }
             pl={ 2 }
           >
             <GridItem colSpan={ 1 } alignContent="center">
@@ -306,7 +306,6 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
             <GridItem colSpan={ 3 }>
               <Stack direction={ 'column' } spacing={ 0 } fontSize={ 'xs' } align="left">
                 <Text fontWeight={ 600 }>{ sale.name }</Text>
-                <Text color={ 'gray.500' }> { Moment( sale.date ).format( 'LLL' ) } </Text>
 
                 { sale.attributes.sort(( a, b ) => a.score - b.score ).map( attr => {
                   <SimpleGrid columns={ 3 } spacing={ 1 }>

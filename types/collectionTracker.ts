@@ -1,6 +1,4 @@
 
-import Moment from 'moment'
-
 export interface ICollectionResponse {
     data: ICollectionData;
 }
@@ -30,7 +28,7 @@ export interface ICollectionTracker {
 
 export interface IMarketListing {
       id: string;
-      updatedAt: Moment.Moment;
+      updatedAt: string;
       title: string;
       image: string;
       url: string;
@@ -59,7 +57,7 @@ export interface IFloorPrice {
     id: string;
     collection: string;
     floorPrice: number;
-    time: Moment.Moment;
+    time: string;
     timeStr: string;
     percentChange: number;
   }
@@ -74,7 +72,7 @@ export interface ITokenAttribute {
 export interface IListingSale {
       id: string;
       name: string;
-      date: Moment.Moment;
+      date: string;
       price: number;
       lastSoldPrice: number;
       marketplace: string;
@@ -86,7 +84,7 @@ export interface IListingSale {
 export interface IRarityCalculator {
     id: string;
     collection: string;
-    createdAt: Moment.Moment;
+    createdAt: string;
     lookup: any;
 }
 
@@ -114,7 +112,7 @@ export interface IListing {
 export interface IListingSale {
     id: string;
     name: string;
-    date: Moment.Moment;
+    date: string;
     price: number;
     lastSoldPrice: number | undefined;
     marketplace: string;
