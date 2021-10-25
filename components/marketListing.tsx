@@ -1,11 +1,9 @@
 import {
   Accordion,
   AccordionItem,
-  AccordionHeader,
   AccordionPanel,
   AccordionButton,
   AccordionIcon,
-  Avatar,
   Flex,
   Circle,
   Box,
@@ -24,7 +22,6 @@ import {
   Stack,
   StatLabel,
   StatNumber,
-  Center,
 } from '@chakra-ui/react'
 import { BsStar, BsStarFill, BsStarHalf } from 'react-icons/bs'
 import { FiShoppingCart } from 'react-icons/fi'

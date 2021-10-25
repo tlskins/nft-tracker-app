@@ -1,13 +1,11 @@
-import { ReactNode, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import {
   Box,
-  Flex,
   Heading,
   Text,
   Stack,
   Container,
-  Avatar,
   useColorModeValue,
 } from '@chakra-ui/react'
 import Moment from "moment"
