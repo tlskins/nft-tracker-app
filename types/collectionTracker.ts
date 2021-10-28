@@ -19,6 +19,7 @@ export interface ICollectionTracker {
     lastUpdated: string;
     hourlySales: number | undefined;
     averageSalesPrice: number | undefined;
+    salesVolume: number | undefined;
 
     currentBest: IMarketListing;
     lastDayBest: IMarketListing;
@@ -33,6 +34,7 @@ export interface IMarketListing {
       image: string;
       url: string;
       tokenAddress: string | undefined;
+      tokenNumber: number | undefined;
       collection: string;
       marketplace: string;
       rank: number | undefined;
@@ -72,23 +74,34 @@ export interface ITokenAttribute {
 export interface IListingSale {
       id: string;
       name: string;
+      saleDate: string;
       date: string;
       price: number;
       lastSoldPrice: number;
       marketplace: string;
       tokenAddress: string;
       buyerAddress: string;
+      rarity: string;
+      rank: number | undefined;
+
       attributes: [ITokenAttribute];
+      topAttributes: [ITokenAttribute];
   }
 
 export interface IRarityCalculator {
     id: string;
+    updatedAt: string;
     collection: string;
-    createdAt: string;
     lookup: any;
 }
 
 export interface IRarityValuation {
+    rarity: string;
+    rarityScore: number;
+    rarityValue: IRarityValue
+}
+
+export interface IRarityValue {
     value: string;
     suggestedPrice: number;
     rarity: string;
