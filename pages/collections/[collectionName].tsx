@@ -35,6 +35,7 @@ export default function Homepage() {
     lastWeekFloor,
     hourlySales,
     averageSalesPrice,
+    salesVolume,
     currentListings,
   } = tracker || {}
 
@@ -119,6 +120,11 @@ export default function Homepage() {
                     <Container w="100%">
                       Hourly Sales: { hourlySales?.toFixed( 2 ) || 'N/A' }<br />
                       Last Week Avg { averageSalesPrice?.toFixed( 2 ) || 'N/A' }<br />
+                      { salesVolume &&
+                        <>
+                          Sales Volume { salesVolume.toFixed( 2 ) || 'N/A' }<br />
+                        </>
+                      }
                       <br />
                     </Container>
                   </TestimonialText>

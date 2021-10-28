@@ -185,7 +185,7 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
           >
             <SimpleGrid columns={ 2 } spacing={ 0 }>
               <Text> Suggested Price </Text> <Text> { rarityValue.suggestedPrice?.toFixed( 2 ) || '?' } SOL </Text>
-              <Text> Rarity </Text> <Text> { rarityValue.rarity || '?' } </Text>
+              <Text> Rarity </Text> <Text> { rarityValuation.rarity || '?' } </Text>
               <Text> Total Daily Sales </Text> <Text> { rarityValue.totalDailySales } </Text>
               { rarityValue.totalDailySales !== 0 &&
                 <>

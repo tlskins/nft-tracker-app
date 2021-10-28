@@ -104,7 +104,6 @@ export interface IRarityValuation {
 export interface IRarityValue {
     value: string;
     suggestedPrice: number;
-    rarity: string;
 
     totalDailySales: number;
     totalDailyVolume: number;
