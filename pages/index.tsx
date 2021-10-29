@@ -47,8 +47,8 @@ export default function CallToActionWithVideo() {
               Degen Bible
             </Text>
             <br />
-            <Text as={ 'span' } color={ 'red.400' }>
-              Track NFTs from your phone!
+            <Text as={ 'span' } color={ 'red.400' } fontSize={ { base: '2xl', sm: '3xl', lg: '4xl' } } letterSpacing={ .8 } >
+              Degens! Unlock a higher power and save your SOLs!
             </Text>
           </Heading>
           <Text color={ 'gray.500' }>
