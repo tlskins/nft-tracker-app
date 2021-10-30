@@ -30,14 +30,27 @@ export default function Homepage() {
   const [ expandedListings, setExpandedListings ] = useState( {} as any)
   const {
     currentBest,
-    floorPrice: currentFloor,
-    lastDayFloor,
-    lastWeekFloor,
-    hourlySales,
-    averageSalesPrice,
-    salesVolume,
+    marketSummary,
     currentListings,
   } = tracker || {}
+  const {
+    hourMarketSummary,
+    dayMarketSummary,
+    weekMarketSummary,
+  } = marketSummary || {}
+  const {
+    listingFloor: currentFloor,
+    listingFloorChange: floorChgHour,
+  } = hourMarketSummary || {}
+  const {
+    listingFloor: lastDayFloor,
+    listingFloorChange: floorChgDay,
+    totalSales,
+    avgSalePrice: averageSalesPrice,
+    totalSalesVolume: salesVolume,
+  } = dayMarketSummary || {}
+  const { listingFloor: lastWeekFloor } = weekMarketSummary || {}
+  const hourlySales = totalSales / 12;
 
   const loadCollectionData = async (collection: string) => {
     const resp: ICollectionResponse = await CollectionTrackerDataService.get( collection ) as ICollectionResponse
@@ -82,9 +95,9 @@ export default function Homepage() {
                   </TestimonialHeading>
                   <TestimonialText>
                     <Container w="100%">
-                      Current { currentFloor.floorPrice } { currentFloor.percentChange && `(${currentFloor.percentChange.toFixed( 2 )}%)` }<br />
-                      Last Day Avg { lastDayFloor.floorPrice } { lastDayFloor.percentChange && `(${lastDayFloor.percentChange.toFixed( 2 )}%)` }<br />
-                      Last Week Avg { lastWeekFloor.floorPrice }<br />
+                      Current { currentFloor } { floorChgHour && `(${floorChgHour.toFixed( 2 )}%)` }<br />
+                      Last Day Avg { lastDayFloor } { floorChgDay && `(${floorChgDay.toFixed( 2 )}%)` }<br />
+                      Last Week Avg { lastWeekFloor }<br />
                     </Container>
                   </TestimonialText>
                 </RegularContent>

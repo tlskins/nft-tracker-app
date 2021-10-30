@@ -5,21 +5,13 @@ export interface ICollectionResponse {
 
 export interface ICollectionData{
     tracker: ICollectionTracker;
-    sales: [IListingSale];
-    listings: [IMarketListing];
-    floors: [IFloorPrice];
     rarityCalculator: IRarityCalculator | undefined;
 }
 export interface ICollectionTracker {
     id: string;
     collection: string;
-    floorPrice: IFloorPrice;
-    lastDayFloor: IFloorPrice;
-    lastWeekFloor: IFloorPrice;
+    marketSummary: IMarketSummary;
     lastUpdated: string;
-    hourlySales: number | undefined;
-    averageSalesPrice: number | undefined;
-    salesVolume: number | undefined;
 
     currentBest: IMarketListing;
     lastDayBest: IMarketListing;
@@ -28,40 +20,69 @@ export interface ICollectionTracker {
   }
 
 export interface IMarketListing {
-      id: string;
-      updatedAt: string;
-      title: string;
-      image: string;
-      url: string;
-      tokenAddress: string | undefined;
-      tokenNumber: number | undefined;
-      collection: string;
-      marketplace: string;
-      rank: number | undefined;
-      price: number;
-      rarity: string | undefined;
-      suggestedPrice: number | undefined;
-      marketFloor: number | undefined;
-      lastSoldPrice: number | undefined;
-      score: number;
-      scorePercentChange: number | undefined;
-      dailyBestScoreRank: number | undefined;
-      weeklyBestScoreRank: number | undefined;
-      listedForSale: boolean;
-      isNew: boolean;
-      isBest: boolean;
+    id: string;
+    updatedAt: string;
+    title: string;
+    image: string;
+    url: string;
+    tokenAddress: string | undefined;
+    tokenNumber: number | undefined;
+    collection: string;
+    marketplace: string;
+    rank: number | undefined;
+    price: number;
+    rarity: string | undefined;
+    suggestedPrice: number | undefined;
+    marketFloor: number | undefined;
+    lastSoldPrice: number | undefined;
+    score: number;
+    scorePercentChange: number | undefined;
+    dailyBestScoreRank: number | undefined;
+    weeklyBestScoreRank: number | undefined;
+    listedForSale: boolean;
+    isNew: boolean;
+    isBest: boolean;
 
-      attributes: [ITokenAttribute] | undefined;
-      topAttributes: [ITokenAttribute] | undefined;
+    attributes: [ITokenAttribute] | undefined;
+    topAttributes: [ITokenAttribute] | undefined;
   }
 
-export interface IFloorPrice {
+export interface IMarketSummary {
     id: string;
     collection: string;
-    floorPrice: number;
     time: string;
     timeStr: string;
-    percentChange: number;
+
+    hourMarketSummary: IMarketWindowSummary;
+    dayMarketSummary: IMarketWindowSummary;
+    weekMarketSummary: IMarketWindowSummary;
+  }
+
+export interface IMarketWindowSummary {
+    id: string;
+
+    // listing summaries
+    listingFloor: number;
+    avgListPrice: number;
+    totalListings: number;
+
+    // sales summaries
+    salesFloor: number;
+    salesCeiling: number;
+    avgSalePrice: number;
+    totalSales: number;
+    totalSalesVolume: number;
+
+    // deltas
+    listingFloorChange: number;
+    avgListPriceChange: number;
+    totalListingsChange: number;
+
+    salesFloorChange: number;
+    salesCeilingChange: number;
+    avgSalePriceChange: number;
+    totalSalesChange: number;
+    totalSalesVolumeChange: number;
   }
 
 export interface ITokenAttribute {
