@@ -3,9 +3,9 @@ export interface ICollectionResponse {
     data: ICollectionData;
 }
 
+
 export interface ICollectionData{
     tracker: ICollectionTracker;
-    rarityCalculator: IRarityCalculator | undefined;
 }
 export interface ICollectionTracker {
     id: string;
@@ -108,6 +108,17 @@ export interface IListingSale {
       attributes: [ITokenAttribute];
       topAttributes: [ITokenAttribute];
   }
+
+
+// Rarity Calc
+
+export interface IRarityResponse {
+  data: IRarityData;
+}
+
+export interface IRarityData{
+  rarityCalculator: IRarityCalculator | undefined;
+}
 
 export interface IRarityCalculator {
     id: string;

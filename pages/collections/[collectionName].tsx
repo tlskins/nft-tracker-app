@@ -53,19 +53,26 @@ export default function Homepage() {
   const hourlySales = totalSales / 12;
 
   const loadCollectionData = async (collection: string) => {
-    const resp: ICollectionResponse = await CollectionTrackerDataService.get( collection ) as ICollectionResponse
-    if ( resp?.data ) {
-      setTracker( resp.data.tracker )
-      setRarityCalculator( resp.data.rarityCalculator  )
-      if ( resp.data.tracker.currentListings?.length > 0 ) {
-        setExpandedListings( { ...expandedListings, [resp.data.tracker.currentListings[0].id]: true } )
+    const tracker: ICollectionTracker | undefined = await CollectionTrackerDataService.get( collection ) as ICollectionTracker | undefined
+    if ( tracker ) {
+      setTracker( tracker )
+      if ( tracker.currentListings?.length > 0 ) {
+        setExpandedListings( { ...expandedListings, [tracker.currentListings[0].id]: true } )
       }
+    }
+  }
+
+  const loadRarityData = async (collection: string) => {
+    const calc: IRarityCalculator | undefined = await CollectionTrackerDataService.getRarity( collection ) as IRarityCalculator | undefined
+    if ( calc ) {
+      setRarityCalculator( calc  )
     }
   }
 
   useEffect(() => {
     if ( collectionName ) {
       loadCollectionData(collectionName as string ).catch( err => console.log( err ))
+      loadRarityData(collectionName as string ).catch( err => console.log( err ))
     }
   }, [collectionName])
 
