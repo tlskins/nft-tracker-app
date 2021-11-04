@@ -151,7 +151,7 @@ interface IAttributeRariyProps {
 
 function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyProps ) {
   const rarityValuation: IRarityValuation | undefined = rarityCalculator?.lookup[tokenAttribute.name][tokenAttribute.value] as IRarityValuation | undefined
-  const { rarityValue } = rarityValuation
+  const { rarityValue } = ( rarityValuation || {})
 
   return (
     <Box
