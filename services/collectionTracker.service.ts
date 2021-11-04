@@ -16,7 +16,7 @@ class CollectionTrackerDataService {
 
   getRarity = async ( collection: string ): Promise<IRarityCalculator | undefined> => {
     try {
-      const resp: IRarityResponse = await http.get( `/rarity/${collection}` )
+      const resp: IRarityResponse = await http.get( `/${collection}/rarity` )
 
       return resp?.data?.rarityCalculator
     } catch( err ) {
