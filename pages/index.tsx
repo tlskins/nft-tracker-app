@@ -13,8 +13,19 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react'
 import { WalletDisconnectButton, WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { SendOneLamportToRandomAddress } from '../components/SendLamport'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useEffect } from 'react'
+
 
 export default function CallToActionWithVideo() {
+  const { publicKey } = useWallet()
+  useEffect(() => {
+    if ( publicKey ) {
+      console.log( 'public key!', publicKey.toString())
+    }
+  }, [ publicKey ])
+
   return (
     <Container maxW={ '7xl' }>
       <Stack
@@ -27,10 +38,8 @@ export default function CallToActionWithVideo() {
           <Container>
             <WalletMultiButton />
             <WalletDisconnectButton />
+            <SendOneLamportToRandomAddress />
           </Container>
-          {/* <StrictMode>
-            <Wallet />
-          </StrictMode> */}
           <Heading
             lineHeight={ 1.1 }
             fontWeight={ 600 }
