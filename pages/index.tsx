@@ -12,6 +12,7 @@ import {
   IconProps,
   useColorModeValue,
 } from '@chakra-ui/react'
+import { WalletDisconnectButton, WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 
 export default function CallToActionWithVideo() {
   return (
@@ -23,6 +24,13 @@ export default function CallToActionWithVideo() {
         direction={ { base: 'column', md: 'row' } }
       >
         <Stack flex={ 1 } spacing={ { base: 5, md: 10 } }>
+          <Container>
+            <WalletMultiButton />
+            <WalletDisconnectButton />
+          </Container>
+          {/* <StrictMode>
+            <Wallet />
+          </StrictMode> */}
           <Heading
             lineHeight={ 1.1 }
             fontWeight={ 600 }
