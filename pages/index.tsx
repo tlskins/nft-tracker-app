@@ -11,20 +11,86 @@ import {
   createIcon,
   IconProps,
   useColorModeValue,
+  FormControl,
+  FormLabel,
+  Input,
+  Checkbox,
+  Link,
 } from '@chakra-ui/react'
 import { WalletDisconnectButton, WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { SendOneLamportToRandomAddress } from '../components/SendLamport'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useEffect } from 'react'
+import { useEffect, useState, useContext } from 'react'
+import toast, { Toaster } from 'react-hot-toast'
+
+import { SendOneLamportToRandomAddress } from '../components/SendLamport'
+import { Notification } from '../components/notification'
+import UserService from '../services/user.service'
+import { globalContext } from '../store'
+import { ICreateUserReq } from '../types/user'
 
 
-export default function CallToActionWithVideo() {
+export default function Homepage() {
+  const { globalState, dispatch } = useContext( globalContext )
+  const [newUser, setNewUser] = useState(undefined as ICreateUserReq | undefined)
+
   const { publicKey } = useWallet()
   useEffect(() => {
     if ( publicKey ) {
       console.log( 'public key!', publicKey.toString())
+      signInUser( publicKey.toString() )
     }
   }, [ publicKey ])
+
+  const signInUser = async ( walletPublicKey: string ): Promise<void> => {
+    let user
+    try {
+      user = await UserService.get( walletPublicKey )
+    } catch( err ) {
+      console.log( 'err get user', err )
+    }
+
+    if ( user ) {
+      dispatch({ type: 'SET_USER', payload: user })
+      toast.custom(
+        <Notification
+          message="Signed In!"
+          variant="success"
+        />,
+      )
+    } else {
+      setNewUser({
+        walletPublicKey,
+        discordId: "",
+      } as ICreateUserReq)
+    }
+  }
+
+  const createUser = async (): Promise<void> => {
+    if ( !newUser ) return
+    let user
+    try {
+      user = await UserService.create( newUser )
+    } catch( err ) {
+      console.log( 'err get user', err )
+      toast.custom(
+        <Notification
+          message={ `Error creating user: ${err}` }
+          variant="error"
+        />,
+      )
+    }
+
+    if ( user ) {
+      dispatch({ type: 'SET_USER', payload: user })
+      setNewUser( undefined )
+      toast.custom(
+        <Notification
+          message="Signed In!"
+          variant="success"
+        />
+      )
+    }
+  }
 
   return (
     <Container maxW={ '7xl' }>
@@ -99,6 +165,41 @@ export default function CallToActionWithVideo() {
               How It Works
             </Button>
           </Stack>
+
+          { newUser &&
+            <Box
+              rounded={'lg'}
+              bg={useColorModeValue('white', 'gray.700')}
+              boxShadow={'lg'}
+              p={8}
+            >
+              <Stack spacing={4}>
+                <FormControl id="wallet">
+                  <FormLabel>Wallet</FormLabel>
+                  <Input type="text" disabled={true} value={newUser.walletPublicKey} />
+                </FormControl>
+                <FormControl id="discordId">
+                  <FormLabel>Discord User Name</FormLabel>
+                  <Input
+                    type="text"
+                    value={newUser.discordId}
+                    onChange={ e => setNewUser({ ...newUser, discordId: e.target.value }) }
+                  />
+                </FormControl>
+                <Stack spacing={10}>
+                  <Button
+                    bg={'blue.400'}
+                    color={'white'}
+                    _hover={{ bg: 'blue.500' }}
+                    onClick={ createUser }
+                  >
+                    Create User
+                  </Button>
+                </Stack>
+              </Stack>
+            </Box>
+          }
+          
         </Stack>
         <Flex
           flex={ 1 }
