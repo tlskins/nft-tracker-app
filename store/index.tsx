@@ -56,7 +56,9 @@ export function GlobalStore({ children }: { children: ReactNode }): ReactElement
     }
   }, [ globalState.persistenceType ])
 
-  return <globalContext.Provider value={ { globalState, dispatch } }>{children}</globalContext.Provider>
+  return <globalContext.Provider value={ { globalState, dispatch } }>
+    {children}
+  </globalContext.Provider>
 }
 
 function initializeState() {

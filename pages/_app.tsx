@@ -4,6 +4,8 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
 import { AppProps } from 'next/app'
 import dynamic from 'next/dynamic'
 import { FC, ReactNode } from 'react'
+import { Toaster } from 'react-hot-toast'
+
 import { GlobalStore } from '../store'
 
 require( '@solana/wallet-adapter-react-ui/styles.css' )
@@ -29,6 +31,7 @@ const App: FC<AppProps> = ({ Component, pageProps }) => {
             <link rel="shortcut icon" href="/favicon.ico" />
           </Head>
           <ChakraProvider>
+            <Toaster />
             <Component { ...pageProps } />
           </ChakraProvider>
         </GlobalStore>

@@ -38,7 +38,7 @@ export const WalletConnectionProvider: FC<{ children: ReactNode }> = ({ children
 
   return (
     <ConnectionProvider endpoint={ endpoint }>
-      <WalletProvider wallets={ wallets } autoConnect>
+      <WalletProvider wallets={ wallets }>
         {children}
       </WalletProvider>
     </ConnectionProvider>

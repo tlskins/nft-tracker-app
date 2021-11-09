@@ -31,13 +31,17 @@ import { ICreateUserReq } from '../types/user'
 
 export default function Homepage() {
   const { globalState, dispatch } = useContext( globalContext )
-  const [newUser, setNewUser] = useState(undefined as ICreateUserReq | undefined)
-
   const { publicKey } = useWallet()
+  const [ newUser, setNewUser ] = useState( undefined as ICreateUserReq | undefined )
+
+  console.log( 'globalState', globalState )
+
   useEffect(() => {
     if ( publicKey ) {
       console.log( 'public key!', publicKey.toString())
-      signInUser( publicKey.toString() )
+      signInUser( publicKey.toString())
+    } else if ( !publicKey && globalState.user ) {
+      signOutUser()
     }
   }, [ publicKey ])
 
@@ -47,6 +51,8 @@ export default function Homepage() {
       user = await UserService.get( walletPublicKey )
     } catch( err ) {
       console.log( 'err get user', err )
+
+      return
     }
 
     if ( user ) {
@@ -60,13 +66,23 @@ export default function Homepage() {
     } else {
       setNewUser({
         walletPublicKey,
-        discordId: "",
-      } as ICreateUserReq)
+        discordId: '',
+      } as ICreateUserReq )
     }
   }
 
+  const signOutUser = (): void => {
+    dispatch({ type: 'SET_USER', payload: undefined })
+    toast.custom(
+      <Notification
+        message="Signed Out!"
+        variant="success"
+      />
+    )
+  }
+
   const createUser = async (): Promise<void> => {
-    if ( !newUser ) return
+    if ( !newUser ) {return}
     let user
     try {
       user = await UserService.create( newUser )
@@ -87,7 +103,7 @@ export default function Homepage() {
         <Notification
           message="Signed In!"
           variant="success"
-        />
+        />,
       )
     }
   }
@@ -101,11 +117,17 @@ export default function Homepage() {
         direction={ { base: 'column', md: 'row' } }
       >
         <Stack flex={ 1 } spacing={ { base: 5, md: 10 } }>
-          <Container>
-            <WalletMultiButton />
-            <WalletDisconnectButton />
+          <Stack spacing={{ base: 1, md: 2 }} width="xs">
+            <Container>
+              <WalletMultiButton />
+            </Container>
+
+            <Container>
+              <WalletDisconnectButton />
+            </Container>
+
             <SendOneLamportToRandomAddress />
-          </Container>
+          </Stack>
           <Heading
             lineHeight={ 1.1 }
             fontWeight={ 600 }
@@ -168,29 +190,29 @@ export default function Homepage() {
 
           { newUser &&
             <Box
-              rounded={'lg'}
-              bg={useColorModeValue('white', 'gray.700')}
-              boxShadow={'lg'}
-              p={8}
+              rounded={ 'lg' }
+              bg={ useColorModeValue( 'white', 'gray.700' ) }
+              boxShadow={ 'lg' }
+              p={ 8 }
             >
-              <Stack spacing={4}>
+              <Stack spacing={ 4 }>
                 <FormControl id="wallet">
                   <FormLabel>Wallet</FormLabel>
-                  <Input type="text" disabled={true} value={newUser.walletPublicKey} />
+                  <Input type="text" disabled={ true } value={ newUser.walletPublicKey } />
                 </FormControl>
                 <FormControl id="discordId">
                   <FormLabel>Discord User Name</FormLabel>
                   <Input
                     type="text"
-                    value={newUser.discordId}
+                    value={ newUser.discordId }
                     onChange={ e => setNewUser({ ...newUser, discordId: e.target.value }) }
                   />
                 </FormControl>
-                <Stack spacing={10}>
+                <Stack spacing={ 10 }>
                   <Button
-                    bg={'blue.400'}
-                    color={'white'}
-                    _hover={{ bg: 'blue.500' }}
+                    bg={ 'blue.400' }
+                    color={ 'white' }
+                    _hover={ { bg: 'blue.500' } }
                     onClick={ createUser }
                   >
                     Create User
@@ -199,7 +221,7 @@ export default function Homepage() {
               </Stack>
             </Box>
           }
-          
+
         </Stack>
         <Flex
           flex={ 1 }

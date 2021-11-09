@@ -4,7 +4,7 @@ import { IUser, ICreateUserReq } from '../types/user'
 class UserService {
   get = async ( walletPublicKey: string ): Promise<IUser | undefined> => {
     try {
-      const user: IUser = await http.get( `users/${walletPublicKey}` )
+      const user: IUser | undefined = await http.get( `users/${walletPublicKey}` )
 
       return user
     } catch( err ) {
