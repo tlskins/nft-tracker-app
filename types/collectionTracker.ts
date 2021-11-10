@@ -2,8 +2,6 @@
 export interface ICollectionResponse {
     data: ICollectionData;
 }
-
-
 export interface ICollectionData{
     tracker: ICollectionTracker;
 }

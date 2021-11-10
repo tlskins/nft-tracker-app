@@ -14,15 +14,13 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Checkbox,
-  Link,
 } from '@chakra-ui/react'
 import { WalletDisconnectButton, WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useEffect, useState, useContext } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 
-import { SendOneLamportToRandomAddress } from '../components/SendLamport'
+import SendPaymentToTreasury from '../components/SendPaymentToTreasury'
 import { Notification } from '../components/notification'
 import UserService from '../services/user.service'
 import { globalContext } from '../store'
@@ -33,6 +31,7 @@ export default function Homepage() {
   const { globalState, dispatch } = useContext( globalContext )
   const { publicKey } = useWallet()
   const [ newUser, setNewUser ] = useState( undefined as ICreateUserReq | undefined )
+  const { user } = globalState
 
   console.log( 'globalState', globalState )
 
@@ -40,7 +39,7 @@ export default function Homepage() {
     if ( publicKey ) {
       console.log( 'public key!', publicKey.toString())
       signInUser( publicKey.toString())
-    } else if ( !publicKey && globalState.user ) {
+    } else if ( !publicKey && user ) {
       signOutUser()
     }
   }, [ publicKey ])
@@ -121,12 +120,12 @@ export default function Homepage() {
             <Container>
               <WalletMultiButton />
             </Container>
-
-            <Container>
-              <WalletDisconnectButton />
-            </Container>
-
-            <SendOneLamportToRandomAddress />
+            { user &&
+              <Container>
+                <WalletDisconnectButton />
+                <SendPaymentToTreasury />
+              </Container>
+            }
           </Stack>
           <Heading
             lineHeight={ 1.1 }
