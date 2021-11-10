@@ -15,6 +15,7 @@ import {
   Tooltip,
   Grid,
   GridItem,
+  HStack,
   Heading,
   Text,
   SimpleGrid,
@@ -114,10 +115,16 @@ function SmallStatsCard({ title, stat }: StatsCardProps ) {
 function MarketListingHighlights({ listing, currentRank }: { listing: IMarketListing, currentRank: number }) {
   return(
     <SimpleGrid columns={ { base: 1, md: 6 } } spacing={ { base: 2, lg: 3 } }>
-      <SmallStatsCard
+      {/* <SmallStatsCard
         title="Current Rank"
         stat={ `#${ currentRank }` }
-      />
+      /> */}
+      { listing.rank &&
+        <SmallStatsCard
+          title="Rank"
+          stat={ `#${listing.rank}` }
+        />
+      }
       <SmallStatsCard
         title="Rarity"
         stat={ listing.rarity }
@@ -134,12 +141,6 @@ function MarketListingHighlights({ listing, currentRank }: { listing: IMarketLis
         title="Score"
         stat={ `${listing.score.toFixed( 2 )}` }
       />
-      { listing.rank &&
-        <SmallStatsCard
-          title="Rank"
-          stat={ `#${listing.rank}` }
-        />
-      }
     </SimpleGrid>
   )
 }
@@ -227,6 +228,9 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
           </Text>
       }
       { rarityValue?.salesHistory.map( sale => {
+        const attrs = sale.attributes.sort(( a, b ) => b.score - a.score )
+        const colLen = Math.ceil( attrs.length / 3 )
+
         return(
           <Grid
             columns={ 4 }
@@ -236,25 +240,42 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
             spacing={ 4 }
             align={ 'left' }
             key={ sale.id }
-            pl={ 2 }
+            padding={ 2 }
+            boxShadow="md"
           >
-            <GridItem colSpan={ 1 } alignContent="center">
-              <Text fontWeight={ 600 } fontSize="sm">{ sale.price } SOL</Text>
+            <GridItem colSpan={ 1 } fontSize={ 'xs' } color={ 'gray.500' } alignContent="center">
+              <Text fontWeight="bold" fontSize="sm" color="gray.700">{ sale.price } SOL</Text>
+              <Text>{ sale.name }</Text>
+              <Text> { Moment( sale.date ).format( 'LLL' ) } </Text>
             </GridItem>
 
-            <GridItem colSpan={ 3 }>
-              <Stack direction={ 'column' } spacing={ 0 } fontSize={ 'xs' } align="left">
-                <Text fontWeight={ 600 }>{ sale.name }</Text>
-                <Text color={ 'gray.500' }> { Moment( sale.date ).format( 'LLL' ) } </Text>
+            <GridItem colSpan={ 3 } alignContent="center" alignItems="center" textAlign="center">
+              <Text textTransform="uppercase"
+                textDecoration="underline"
+                fontSize="xs"
+              >
+                Attributes ({ attrs.length })
+              </Text>
 
-                { sale.attributes.sort(( a, b ) => a.score - b.score ).map( attr => {
-                  <SimpleGrid columns={ 3 } spacing={ 1 }>
-                    <Text color={ 'gray.500' }> { attr.value } </Text>
-                    <Text color={ 'gray.500' }> { attr.rarity } </Text>
-                    <Text color={ 'gray.500' }> { attr.score.toFixed( 2 ) } </Text>
-                  </SimpleGrid>
-                })}
-              </Stack>
+              <HStack>
+                <Stack direction={ 'column' } spacing={ 0 } fontSize={ 'xs' } align="center" width="100%" boxShadow="md">
+                  { attrs.slice( 0, colLen ).map(( attr, i ) => (
+                    <Text color={ 'gray.500' } key={ i } align="left"> { attr.name } | { attr.value } | { attr.rarity } </Text>
+                  ))}
+                </Stack>
+
+                <Stack direction={ 'column' } spacing={ 0 } fontSize={ 'xs' } align="center" width="100%" boxShadow="md">
+                  { attrs.slice( colLen, colLen * 2 ).map(( attr, i ) => (
+                    <Text color={ 'gray.500' } key={ i } align="left"> { attr.name } | { attr.value } | { attr.rarity } </Text>
+                  ))}
+                </Stack>
+
+                <Stack direction={ 'column' } spacing={ 0 } fontSize={ 'xs' } align="center" width="100%" boxShadow="md">
+                  { attrs.slice( colLen * 2 ).map(( attr, i ) => (
+                    <Text color={ 'gray.500' } key={ i } align="left"> { attr.name } | { attr.value } | { attr.rarity } </Text>
+                  ))}
+                </Stack>
+              </HStack>
             </GridItem>
           </Grid>
         )
@@ -597,11 +618,11 @@ export function CollapsedMarketListing({ listing, currentRank, onClick }: Collap
               >
                 <Box justifyContent="space-between" alignContent="center" align="center" width="100%">
                   <MarketListingHighlights listing={ listing } currentRank={ currentRank } />
-                  { listing.topAttributes?.length > 0 &&
+                  {/* { listing.topAttributes?.length > 0 &&
                     <Text mt={ 6 } textTransform="uppercase" letterSpacing={ 1.1 } color="gray.700" textStyle="bold">
                       { listing.topAttributes.map( attr => attr.value ).join( ', ' ) }
                     </Text>
-                  }
+                  } */}
                 </Box>
               </Box>
             </Flex>
