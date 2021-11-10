@@ -341,7 +341,7 @@ function AttributeValueRarityHeader({ attribute }: AttributeValueRarityHeaderPro
             mb="1"
             flex="row"
           >
-            { attribute.value }
+            { attribute.value } ({ attribute.rarity })
             <Text fontSize="sm" textTransform="uppercase" color={ useColorModeValue( 'gray.500', 'white' ) } mt="1">
               (Score { attribute.score.toFixed( 2 ) })
             </Text>
