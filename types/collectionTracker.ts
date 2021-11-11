@@ -144,8 +144,9 @@ export interface IRarityValue {
 }
 
 export interface IListing {
-    name: string;
+    title: string;
     price: number;
+    url: string;
     lastSoldPrice: number;
     tokenAddress: string;
     attributes: [ITokenAttribute];

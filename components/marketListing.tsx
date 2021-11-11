@@ -15,7 +15,6 @@ import {
   Tooltip,
   Grid,
   GridItem,
-  HStack,
   Heading,
   Text,
   SimpleGrid,
@@ -23,7 +22,9 @@ import {
   Stack,
   StatLabel,
   StatNumber,
+  Link,
 } from '@chakra-ui/react'
+import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { BsStar, BsStarFill, BsStarHalf } from 'react-icons/bs'
 import { FiShoppingCart } from 'react-icons/fi'
 import { IMarketListing, ITokenAttribute, IRarityCalculator, IRarityValuation } from '../types/collectionTracker'
@@ -145,6 +146,41 @@ function MarketListingHighlights({ listing, currentRank }: { listing: IMarketLis
   )
 }
 
+function AttributesTable({ attributes } : { attributes: Array<ITokenAttribute> }) {
+  const attrs = attributes.sort(( a, b ) => b.score - a.score )
+
+  return(
+    <>
+      <Text textTransform="uppercase"
+        textDecoration="underline"
+        fontSize="xs"
+      >
+        Attributes ({ attrs.length })
+      </Text>
+
+      <Grid
+        columns={ 3 }
+        templateColumns="repeat(3, 1fr)"
+        mt={ 1 }
+        direction={ 'column' }
+        spacing={ 4 }
+        align={ 'left' }
+        pl={ 2 }
+      >
+        { attrs.map(( attr, i ) => (
+          <Text color={ 'gray.500' }
+            key={ i }
+            align="left"
+            fontSize="xs"
+          >
+            { attr.name }: { attr.value } ({ attr.rarity })
+          </Text>
+        ))}
+      </Grid>
+    </>
+  )
+}
+
 interface IAttributeRariyProps {
   tokenAttribute: ITokenAttribute;
   rarityCalculator: IRarityCalculator;
@@ -190,8 +226,10 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
               <Text> Total Daily Sales </Text> <Text> { rarityValue.totalDailySales } </Text>
               { rarityValue.totalDailySales !== 0 &&
                 <>
-                  <Text> Avg Sale Price </Text> <Text> { rarityValue.avgSalePrice  } </Text>
-                  <Text> Total Daily Volume </Text> <Text> { rarityValue.totalDailyVolume  } </Text>
+                  <Text> Avg Sale Price </Text>
+                  <Text> { rarityValue.avgSalePrice.toFixed( 2 ) } </Text>
+                  <Text> Total Daily Volume </Text>
+                  <Text> { rarityValue.totalDailyVolume.toFixed( 2 ) } </Text>
                 </>
               }
             </SimpleGrid>
@@ -207,14 +245,17 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
         fontSize={ 'xs' }
         textAlign="center"
       >
-        <Heading
-          color={ useColorModeValue( 'gray.700', 'white' ) }
-          fontSize={ 'xl' }
-          fontFamily={ 'body' }
-          mt="5"
+        <Text
+          color={ 'green.500' }
+          textTransform={ 'uppercase' }
+          fontStyle="under"
+          fontWeight={ 800 }
+          fontSize={ 'sm' }
+          letterSpacing={ 1.1 }
+          marginTop="5"
         >
           Sales
-        </Heading>
+        </Text>
       </Tooltip>
       { ( rarityValue?.salesHistory || []).length === 0 &&
           <Text
@@ -228,9 +269,6 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
           </Text>
       }
       { rarityValue?.salesHistory.map( sale => {
-        const attrs = sale.attributes.sort(( a, b ) => b.score - a.score )
-        const colLen = Math.ceil( attrs.length / 3 )
-
         return(
           <Grid
             columns={ 4 }
@@ -241,7 +279,6 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
             align={ 'left' }
             key={ sale.id }
             padding={ 2 }
-            boxShadow="md"
           >
             <GridItem colSpan={ 1 } fontSize={ 'xs' } color={ 'gray.500' } alignContent="center">
               <Text fontWeight="bold" fontSize="sm" color="gray.700">{ sale.price } SOL</Text>
@@ -250,32 +287,7 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
             </GridItem>
 
             <GridItem colSpan={ 3 } alignContent="center" alignItems="center" textAlign="center">
-              <Text textTransform="uppercase"
-                textDecoration="underline"
-                fontSize="xs"
-              >
-                Attributes ({ attrs.length })
-              </Text>
-
-              <HStack>
-                <Stack direction={ 'column' } spacing={ 0 } fontSize={ 'xs' } align="center" width="100%" boxShadow="md">
-                  { attrs.slice( 0, colLen ).map(( attr, i ) => (
-                    <Text color={ 'gray.500' } key={ i } align="left"> { attr.name } | { attr.value } | { attr.rarity } </Text>
-                  ))}
-                </Stack>
-
-                <Stack direction={ 'column' } spacing={ 0 } fontSize={ 'xs' } align="center" width="100%" boxShadow="md">
-                  { attrs.slice( colLen, colLen * 2 ).map(( attr, i ) => (
-                    <Text color={ 'gray.500' } key={ i } align="left"> { attr.name } | { attr.value } | { attr.rarity } </Text>
-                  ))}
-                </Stack>
-
-                <Stack direction={ 'column' } spacing={ 0 } fontSize={ 'xs' } align="center" width="100%" boxShadow="md">
-                  { attrs.slice( colLen * 2 ).map(( attr, i ) => (
-                    <Text color={ 'gray.500' } key={ i } align="left"> { attr.name } | { attr.value } | { attr.rarity } </Text>
-                  ))}
-                </Stack>
-              </HStack>
+              <AttributesTable attributes={ sale.attributes } />
             </GridItem>
           </Grid>
         )
@@ -289,14 +301,17 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
         fontSize={ 'xs' }
         textAlign="center"
       >
-        <Heading
-          color={ useColorModeValue( 'gray.700', 'white' ) }
-          fontSize={ 'xl' }
-          fontFamily={ 'body' }
-          mt="5"
+        <Text
+          color={ 'green.500' }
+          textTransform={ 'uppercase' }
+          fontStyle="under"
+          fontWeight={ 800 }
+          fontSize={ 'sm' }
+          letterSpacing={ 1.1 }
+          marginTop="5"
         >
           Current Listings
-        </Heading>
+        </Text>
       </Tooltip>
       { ( rarityValue?.currentListings || []).length === 0 &&
           <Text
@@ -309,38 +324,23 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
             None
           </Text>
       }
-      { rarityValue?.currentListings.map(( sale, i ) => {
-        return(
-          <Grid
-            key={ i }
-            columns={ 4 }
-            templateColumns="repeat(4, 1fr)"
-            mt={ 1 }
-            direction={ 'row' }
-            spacing={ 4 }
-            align={ 'left' }
-            pl={ 2 }
-          >
-            <GridItem colSpan={ 1 } alignContent="center">
-              <Text fontWeight={ 600 } fontSize="sm">{ sale.price } SOL</Text>
-            </GridItem>
-
-            <GridItem colSpan={ 3 }>
-              <Stack direction={ 'column' } spacing={ 0 } fontSize={ 'xs' } align="left">
-                <Text fontWeight={ 600 }>{ sale.name }</Text>
-
-                { sale.attributes.sort(( a, b ) => a.score - b.score ).map( attr => {
-                  <SimpleGrid columns={ 3 } spacing={ 1 }>
-                    <Text color={ 'gray.500' }> { attr.value } </Text>
-                    <Text color={ 'gray.500' }> { attr.rarity } </Text>
-                    <Text color={ 'gray.500' }> { attr.score.toFixed( 2 ) } </Text>
-                  </SimpleGrid>
-                })}
-              </Stack>
-            </GridItem>
-          </Grid>
-        )
-      })}
+      <Grid
+        columns={ 3 }
+        templateColumns="repeat(4, 1fr)"
+        mt={ 1 }
+        direction={ 'column' }
+        spacing={ 4 }
+        align={ 'left' }
+        pl={ 2 }
+      >
+        { rarityValue?.currentListings.map(( list, i ) => {
+          return(
+            <Link href={ list.url } isExternal fontSize="xs" key={ i }>
+              { list.title } @ { list.price } SOL <ExternalLinkIcon mx="2px" />
+            </Link>
+          )
+        })}
+      </Grid>
     </Box>
   )
 }
