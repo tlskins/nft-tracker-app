@@ -1,7 +1,6 @@
 import React, { createContext, ReactElement, ReactNode, useEffect, useReducer, useRef } from 'react'
 import Reducer from './reducer'
 import { ContextType, GlobalStateInterface } from './types'
-import { IUser } from '../types/user'
 
 
 export const initialState: GlobalStateInterface = {
@@ -9,7 +8,10 @@ export const initialState: GlobalStateInterface = {
   persistenceType: 'sessionStorage',
 }
 
-export const globalContext = createContext<GlobalStateInterface>( initialState )
+export const globalContext = createContext<ContextType>({
+  globalState: initialState,
+  dispatch: undefined,
+})
 
 
 /**
