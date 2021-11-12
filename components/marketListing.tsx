@@ -171,7 +171,7 @@ function AttributesTable({ attributes } : { attributes: Array<ITokenAttribute> }
           <Text color={ 'gray.500' }
             key={ i }
             align="left"
-            fontSize="xs"
+            fontSize="x-small"
           >
             { attr.name }: { attr.value } ({ attr.rarity })
           </Text>
@@ -326,7 +326,7 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
       }
       <Grid
         columns={ 3 }
-        templateColumns="repeat(4, 1fr)"
+        templateColumns="repeat(3, 1fr)"
         mt={ 1 }
         direction={ 'column' }
         spacing={ 4 }
