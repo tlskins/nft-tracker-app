@@ -347,9 +347,13 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
 
 export interface AttributeValueRarityHeaderProps {
   attribute: ITokenAttribute,
+  rarityCalculator: IRarityCalculator;
 }
 
-function AttributeValueRarityHeader({ attribute }: AttributeValueRarityHeaderProps ) {
+function AttributeValueRarityHeader({ attribute, rarityCalculator }: AttributeValueRarityHeaderProps ) {
+  const rarityValuation: IRarityValuation | undefined = rarityCalculator?.lookup[attribute.name][attribute.value] as IRarityValuation | undefined
+  const { rarityValue } = ( rarityValuation || {})
+
   return(
     <h2>
       <AccordionButton _expanded={ { bg: useColorModeValue( 'gray.300', 'white' ) } }>
@@ -364,7 +368,7 @@ function AttributeValueRarityHeader({ attribute }: AttributeValueRarityHeaderPro
           >
             { attribute.value } ({ attribute.rarity })
             <Text fontSize="sm" textTransform="uppercase" color={ useColorModeValue( 'gray.500', 'white' ) } mt="1">
-              (Score { attribute.score.toFixed( 2 ) })
+              (Suggested Price: { rarityValue?.suggestedPrice?.toFixed( 2 ) || '?' } SOL)
             </Text>
           </Heading>
         </Box>
@@ -499,6 +503,7 @@ function MarketListing({ listing, rarityCalculator, currentRank, onClick }: Mark
                         <AccordionItem key={ attribute.name }>
                           <AttributeValueRarityHeader
                             attribute={ attribute }
+                            rarityCalculator={ rarityCalculator }
                           />
                           <AccordionPanel pb={ 4 }>
                             <AttributeRarity

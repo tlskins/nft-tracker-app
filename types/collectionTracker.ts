@@ -88,6 +88,7 @@ export interface ITokenAttribute {
     value: string;
     rarity: string;
     score: number;
+    suggestedPrice: number;
   }
 
 export interface IListingSale {
