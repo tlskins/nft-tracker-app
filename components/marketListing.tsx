@@ -283,6 +283,7 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
             <GridItem colSpan={ 1 } fontSize={ 'xs' } color={ 'gray.500' } alignContent="center">
               <Text fontWeight="bold" fontSize="sm" color="gray.700">{ sale.price } SOL</Text>
               <Text>{ sale.name }</Text>
+              <Text>Rank #{ sale.rank }</Text>
               <Text> { Moment( sale.date ).format( 'LLL' ) } </Text>
             </GridItem>
 
@@ -336,7 +337,7 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
         { rarityValue?.currentListings.map(( list, i ) => {
           return(
             <Link href={ list.url } isExternal fontSize="xs" key={ i }>
-              { list.title } @ { list.price } SOL <ExternalLinkIcon mx="2px" />
+              { list.title } (Rk { list.rank }) @ { list.price } SOL <ExternalLinkIcon mx="2px" />
             </Link>
           )
         })}
