@@ -150,6 +150,7 @@ export interface IListing {
     url: string;
     lastSoldPrice: number;
     tokenAddress: string;
+    rank: number | undefined;
     attributes: [ITokenAttribute];
 }
 

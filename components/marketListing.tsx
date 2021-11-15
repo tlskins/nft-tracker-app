@@ -337,7 +337,7 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
         { rarityValue?.currentListings.map(( list, i ) => {
           return(
             <Link href={ list.url } isExternal fontSize="xs" key={ i }>
-              { list.title } (Rk { list.rank }) @ { list.price } SOL <ExternalLinkIcon mx="2px" />
+              { list.title } (Rk { list.rank || '?' }) @ { list.price } SOL <ExternalLinkIcon mx="2px" />
             </Link>
           )
         })}
