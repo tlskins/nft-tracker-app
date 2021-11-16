@@ -580,22 +580,23 @@ function MarketListing({ listing, rarityCalculator, currentRank, onClick }: Mark
 
                 <Box overflowY="hidden"  width="100%">
                   <Accordion defaultIndex={ [ 0 ] } allowMultiple allowToggle pb="3" overflowY="scroll" height="md" width="100%">
-                    { listing.attributes?.sort(( a, b ) => b.score - a.score ).map( attribute => {
-                      return(
-                        <AccordionItem key={ attribute.name }>
-                          <AttributeValueRarityHeader
-                            attribute={ attribute }
-                            rarityCalculator={ rarityCalculator }
-                          />
-                          <AccordionPanel pb={ 4 }>
-                            <AttributeRarity
-                              tokenAttribute={ attribute }
+                    { listing.attributes?.sort(( a, b ) => b.suggestedPrice - a.suggestedPrice )
+                      .map( attribute => {
+                        return(
+                          <AccordionItem key={ attribute.name }>
+                            <AttributeValueRarityHeader
+                              attribute={ attribute }
                               rarityCalculator={ rarityCalculator }
                             />
-                          </AccordionPanel>
-                        </AccordionItem>
-                      )
-                    })}
+                            <AccordionPanel pb={ 4 }>
+                              <AttributeRarity
+                                tokenAttribute={ attribute }
+                                rarityCalculator={ rarityCalculator }
+                              />
+                            </AccordionPanel>
+                          </AccordionItem>
+                        )
+                      })}
                   </Accordion>
                 </Box>
               </Box>
