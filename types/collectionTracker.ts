@@ -43,6 +43,9 @@ export interface IMarketListing {
 
     attributes: [ITokenAttribute] | undefined;
     topAttributes: [ITokenAttribute] | undefined;
+    coefficients: [number];
+    featureNames: [string];
+    features: [number];
   }
 
 export interface IMarketSummary {

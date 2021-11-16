@@ -4,6 +4,7 @@ import {
   AccordionPanel,
   AccordionButton,
   AccordionIcon,
+  Button,
   Flex,
   Circle,
   Box,
@@ -23,8 +24,16 @@ import {
   StatLabel,
   StatNumber,
   Link,
+  Table,
+  TableCaption,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Td,
 } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
+import { useState } from 'react'
 import { BsStar, BsStarFill, BsStarHalf } from 'react-icons/bs'
 import { FiShoppingCart } from 'react-icons/fi'
 import { IMarketListing, ITokenAttribute, IRarityCalculator, IRarityValuation } from '../types/collectionTracker'
@@ -143,6 +152,61 @@ function MarketListingHighlights({ listing, currentRank }: { listing: IMarketLis
         stat={ `${listing.score.toFixed( 2 )}` }
       />
     </SimpleGrid>
+  )
+}
+
+function SuggestedPriceBreakdown({ listing } : { listing: IMarketListing }) {
+  const hasBreakdown = listing.featureNames?.length > 0 &&
+    listing.coefficients?.length > 0 &&
+    listing.features?.length > 0
+  const scoreSum = listing.coefficients[0] + listing.features.reduce(( sum, val, idx ) => {
+    return sum + listing.coefficients[idx + 1] * val
+  }, 0.0 )
+  const scoreSumStr = scoreSum.toFixed( 2 )
+
+  return(
+    <Table variant="striped" fontSize="xs" size="sm">
+      <TableCaption>Suggested price regression breakdown</TableCaption>
+      { hasBreakdown &&
+        <>
+          <Thead>
+            <Tr>
+              <Th> Type </Th>
+              <Th> Fixed </Th>
+              { listing.featureNames.map( ftNm => (
+                <Th key={ ftNm }> { ftNm } </Th>
+              ))}
+              <Th> Total </Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            <Tr>
+              <Td> Coefficients </Td>
+              { listing.coefficients.map(( coeff, i ) => (
+                <Td key={ i }> { coeff.toFixed( 3 ) } </Td>
+              ))}
+              <Td />
+            </Tr>
+            <Tr>
+              <Td> Listing Value </Td>
+              <Td> - </Td>
+              { listing.features.map(( val, i ) => (
+                <Td key={ i }> { val.toFixed( 2 ) } </Td>
+              ))}
+              <Td />
+            </Tr>
+            <Tr>
+              <Td> Feature Score </Td>
+              <Td> { listing.coefficients[0].toFixed( 2 ) } </Td>
+              { listing.features.map(( val, i ) => (
+                <Td key={ i }> { ( listing.coefficients[i + 1] * val ).toFixed( 2 ) } </Td>
+              ))}
+              <Td> { scoreSumStr } </Td>
+            </Tr>
+          </Tbody>
+        </>
+      }
+    </Table>
   )
 }
 
@@ -388,6 +452,8 @@ export interface MarketListingProps {
 
 
 function MarketListing({ listing, rarityCalculator, currentRank, onClick }: MarketListingProps ) {
+  const [ showSuggBreakdown, setShowSuggBreakdown ] = useState( false )
+
   return (
     <Flex px={ 50 } py={ 4 } w="full" alignItems="center" justifyContent="center" direction="row">
       <Grid
@@ -496,6 +562,21 @@ function MarketListing({ listing, rarityCalculator, currentRank, onClick }: Mark
                 <Box justifyContent="space-between" alignContent="center" align="center" width="100%" mb="4">
                   <MarketListingHighlights listing={ listing } currentRank={ currentRank } />
                 </Box>
+
+                <Flex mb="4" overflowX="scroll" flexDirection="column">
+                  <Button
+                    colorScheme="teal"
+                    size="xs"
+                    width="sm"
+                    mb="4"
+                    onClick={ () => setShowSuggBreakdown( !showSuggBreakdown ) }
+                  >
+                    { showSuggBreakdown ? 'Hide' : 'Show' } Suggested Price Breakdown
+                  </Button>
+                  { showSuggBreakdown &&
+                    <SuggestedPriceBreakdown listing={ listing } />
+                  }
+                </Flex>
 
                 <Box overflowY="hidden"  width="100%">
                   <Accordion defaultIndex={ [ 0 ] } allowMultiple allowToggle pb="3" overflowY="scroll" height="md" width="100%">
