@@ -211,7 +211,7 @@ function SuggestedPriceBreakdown({ listing } : { listing: IMarketListing }) {
 }
 
 function AttributesTable({ attributes } : { attributes: Array<ITokenAttribute> }) {
-  const attrs = attributes.sort(( a, b ) => b.score - a.score )
+  const attrs = attributes.sort(( a, b ) => b.suggestedPrice - a.suggestedPrice )
 
   return(
     <>
