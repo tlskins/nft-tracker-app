@@ -7,6 +7,7 @@ import { FC, ReactNode } from 'react'
 import { Toaster } from 'react-hot-toast'
 
 import { GlobalStore } from '../store'
+import Navbar from '../components/Navbar'
 
 require( '@solana/wallet-adapter-react-ui/styles.css' )
 require( './notification.css' )
@@ -31,6 +32,7 @@ const App: FC<AppProps> = ({ Component, pageProps }) => {
             <link rel="shortcut icon" href="/favicon.ico" />
           </Head>
           <ChakraProvider>
+            <Navbar />
             <Toaster />
             <Component { ...pageProps } />
           </ChakraProvider>

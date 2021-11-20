@@ -115,11 +115,6 @@
         "react/display-name": 0,
         "react/jsx-tag-spacing": "error",
         "react/jsx-closing-bracket-location": "error",
-        "react/no-find-dom-node": "off",
-
-        "jest/no-disabled-tests": "warn",
-        "jest/no-focused-tests": "error",
-        "jest/no-identical-title": "error",
-        "jest/valid-expect": "error"
+        "react/no-find-dom-node": "off"
     }
   }

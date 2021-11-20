@@ -1,15 +1,27 @@
 import http from '../http-common'
 import { ICreateTransactionReq, ICreateTransactionResp } from '../types/transaction'
-import { IUser, ICreateUserReq, IUserResp } from '../types/user'
+import { IUser, ICreateUserReq, IUserResp, ILanding, ILandingResp } from '../types/user'
 
 class UserService {
+  getLanding = async (): Promise<ILanding | undefined> => {
+    try {
+      const landingResp: ILandingResp = await http.get( 'landing' )
+
+      return landingResp?.data
+    } catch( err ) {
+      console.log( 'err getting landing ', err.response?.data )
+
+      return
+    }
+  }
+
   get = async ( walletPublicKey: string ): Promise<IUser | undefined> => {
     try {
       const userResp: IUserResp = await http.get( `users/${walletPublicKey}` )
 
       return userResp?.data?.user
     } catch( err ) {
-      console.log( 'err getting user ', err )
+      console.log( 'err getting user ', err.response?.data )
 
       return
     }
@@ -21,7 +33,7 @@ class UserService {
 
       return userResp?.data?.user
     } catch( err ) {
-      console.log( 'err creating ', err )
+      console.log( 'err creating ', err.response?.data )
 
       return
     }
@@ -33,7 +45,7 @@ class UserService {
 
       return resp.user
     } catch( err ) {
-      console.log( 'err creating trx ', err )
+      console.log( 'err creating trx ', err.response?.data )
 
       return
     }

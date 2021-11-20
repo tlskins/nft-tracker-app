@@ -11,102 +11,10 @@ import {
   createIcon,
   IconProps,
   useColorModeValue,
-  FormControl,
-  FormLabel,
-  Input,
 } from '@chakra-ui/react'
-import { WalletDisconnectButton, WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { useWallet } from '@solana/wallet-adapter-react'
-import { useEffect, useState, useContext } from 'react'
-import toast, { Toaster } from 'react-hot-toast'
-
-import SendPaymentToTreasury from '../components/SendPaymentToTreasury'
-import { Notification } from '../components/notification'
-import UserService from '../services/user.service'
-import { globalContext } from '../store'
-import { ICreateUserReq } from '../types/user'
 
 
 export default function Homepage() {
-  const { globalState, dispatch } = useContext( globalContext )
-  const { publicKey } = useWallet()
-  const [ newUser, setNewUser ] = useState( undefined as ICreateUserReq | undefined )
-  const { user } = globalState
-
-  console.log( 'globalState', globalState )
-
-  useEffect(() => {
-    if ( publicKey ) {
-      console.log( 'public key!', publicKey.toString())
-      signInUser( publicKey.toString())
-    } else if ( !publicKey && user ) {
-      signOutUser()
-    }
-  }, [ publicKey ])
-
-  const signInUser = async ( walletPublicKey: string ): Promise<void> => {
-    let user
-    try {
-      user = await UserService.get( walletPublicKey )
-    } catch( err ) {
-      console.log( 'err get user', err )
-
-      return
-    }
-
-    if ( user ) {
-      dispatch({ type: 'SET_USER', payload: user })
-      toast.custom(
-        <Notification
-          message="Signed In!"
-          variant="success"
-        />,
-      )
-    } else {
-      setNewUser({
-        walletPublicKey,
-        discordId: '',
-      } as ICreateUserReq )
-    }
-  }
-
-  const signOutUser = (): void => {
-    dispatch({ type: 'SET_USER', payload: undefined })
-    toast.custom(
-      <Notification
-        message="Signed Out!"
-        variant="success"
-      />
-    )
-  }
-
-  const createUser = async (): Promise<void> => {
-    if ( !newUser ) {return}
-    let user
-    try {
-      user = await UserService.create( newUser )
-    } catch( err ) {
-      console.log( 'err get user', err )
-      toast.custom(
-        <Notification
-          message={ `Error creating user: ${err}` }
-          variant="error"
-        />,
-      )
-    }
-
-    if ( user ) {
-      dispatch({ type: 'SET_USER', payload: user })
-      setNewUser( undefined )
-      toast.custom(
-        <Notification
-          message="Signed In!"
-          variant="success"
-        />,
-      )
-    }
-  }
-
   return (
     <Container maxW={ '7xl' }>
       <Stack
@@ -116,17 +24,6 @@ export default function Homepage() {
         direction={ { base: 'column', md: 'row' } }
       >
         <Stack flex={ 1 } spacing={ { base: 5, md: 10 } }>
-          <Stack spacing={{ base: 1, md: 2 }} width="xs">
-            <Container>
-              <WalletMultiButton />
-            </Container>
-            { user &&
-              <Container>
-                <WalletDisconnectButton />
-                <SendPaymentToTreasury />
-              </Container>
-            }
-          </Stack>
           <Heading
             lineHeight={ 1.1 }
             fontWeight={ 600 }
@@ -152,7 +49,7 @@ export default function Homepage() {
             </Text>
             <br />
             <Text as={ 'span' } color={ 'red.400' } fontSize={ { base: '2xl', sm: '3xl', lg: '4xl' } } letterSpacing={ .8 } >
-              Unlock a higher power and save your SOLs!
+              Unlock a higher power and save your SOL!
             </Text>
           </Heading>
           <Text color={ 'gray.500' }>
@@ -186,40 +83,6 @@ export default function Homepage() {
               How It Works
             </Button>
           </Stack>
-
-          { newUser &&
-            <Box
-              rounded={ 'lg' }
-              bg={ useColorModeValue( 'white', 'gray.700' ) }
-              boxShadow={ 'lg' }
-              p={ 8 }
-            >
-              <Stack spacing={ 4 }>
-                <FormControl id="wallet">
-                  <FormLabel>Wallet</FormLabel>
-                  <Input type="text" disabled={ true } value={ newUser.walletPublicKey } />
-                </FormControl>
-                <FormControl id="discordId">
-                  <FormLabel>Discord User Name</FormLabel>
-                  <Input
-                    type="text"
-                    value={ newUser.discordId }
-                    onChange={ e => setNewUser({ ...newUser, discordId: e.target.value }) }
-                  />
-                </FormControl>
-                <Stack spacing={ 10 }>
-                  <Button
-                    bg={ 'blue.400' }
-                    color={ 'white' }
-                    _hover={ { bg: 'blue.500' } }
-                    onClick={ createUser }
-                  >
-                    Create User
-                  </Button>
-                </Stack>
-              </Stack>
-            </Box>
-          }
 
         </Stack>
         <Flex

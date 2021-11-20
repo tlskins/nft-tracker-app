@@ -8,7 +8,7 @@ class CollectionTrackerDataService {
 
       return resp?.data?.tracker
     } catch( err ) {
-      console.log( 'err getting collection tracker ', err )
+      console.log( 'err getting collection tracker ', err.response?.data )
 
       return
     }
@@ -20,7 +20,7 @@ class CollectionTrackerDataService {
 
       return resp?.data?.rarityCalculator
     } catch( err ) {
-      console.log( 'err getting rarity ', err )
+      console.log( 'err getting rarity ', err.response?.data )
 
       return
     }
