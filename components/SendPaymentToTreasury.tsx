@@ -4,6 +4,7 @@ import { SystemProgram, Transaction, PublicKey } from '@solana/web3.js'
 import React, { FC, useCallback, useState, useContext } from 'react'
 import {
   Box,
+  Container,
   Stack,
   Slider,
   SliderTrack,
@@ -17,7 +18,6 @@ import {
 import toast from 'react-hot-toast'
 
 import UserService from '../services/user.service'
-import { IUser } from '../types/user'
 import { Notification } from './notification'
 import { globalContext } from '../store'
 
@@ -74,7 +74,6 @@ const SendPaymentToTreasury: FC = () => {
       )
     }
 
-
     // update global store
     const updatedUser = await UserService.createTransaction({
       walletPublicKey: publicKey.toString(),
@@ -87,40 +86,48 @@ const SendPaymentToTreasury: FC = () => {
     }
   }, [ publicKey, sendTransaction, connection ])
 
-  return (
-    <FormControl as="fieldset" boxShadow="lg" padding="6" marginY="4">
-      <Stack
-        align={ 'center' }
-        direction={ { base: 'column' } }
-      >
-        <FormLabel as="legend">Extend Subscription</FormLabel>
-        <Button
-          isLoading={ false }
-          disabled={ !user || !publicKey }
-          loadingText="Submitting"
-          colorScheme="teal"
-          variant="outline"
-          onClick={ onClick( solAmount ) }
-        >
-          Submit { solAmount } SOL
-        </Button>
+  const extendedDays = `(${ ( solAmount * 7 * 5 ).toFixed( 1 ) } days)`
 
-        <Slider
-          defaultValue={ defaultSolAmt }
-          min={ 0.2 }
-          max={ 5 }
-          step={ 0.1 }
-          onChange={ amt => setSolAmount( amt ) }
+  return (
+      <Box>
+        <FormLabel htmlFor="paybtn">Extend Subscription { extendedDays }</FormLabel>
+        <Box paddingX="4"
+          paddingY="2"
+          align="center"
+          alignContent="center"
+          mb="4"
         >
-          <SliderTrack bg="red.100">
-            <Box position="relative" right={ 10 } />
-            <SliderFilledTrack bg="tomato" />
-          </SliderTrack>
-          <SliderThumb boxSize={ 6 } />
-        </Slider>
-      </Stack>
-      <FormHelperText> extend { ( solAmount * 7 * 5 ).toFixed( 2 ) } days </FormHelperText>
-    </FormControl>
+          <Slider
+            defaultValue={ defaultSolAmt }
+            min={ 0.2 }
+            max={ 5 }
+            step={ 0.1 }
+            onChange={ amt => setSolAmount( amt ) }
+          >
+            <SliderTrack bg="gray.200">
+              <Box position="relative" right={ 10 } />
+              <SliderFilledTrack />
+            </SliderTrack>
+            <SliderThumb boxSize={ 6 } bg="blue.500" />
+          </Slider>
+        </Box>
+
+        <Stack alignContent="center" alignItems="center">
+          <Button
+            id="paybtn"
+            isLoading={ false }
+            disabled={ !user || !publicKey }
+            loadingText="Submitting"
+            colorScheme="blue"
+            size="sm"
+            fontSize="xs"
+            textTransform="uppercase"
+            onClick={ onClick( solAmount ) }
+          >
+            Submit { solAmount } SOL
+          </Button>
+        </Stack>
+      </Box>
   )
 }
 

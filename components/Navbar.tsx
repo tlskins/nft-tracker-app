@@ -1,5 +1,6 @@
 import {
   Box,
+  Badge,
   Drawer,
   DrawerBody,
   DrawerFooter,
@@ -8,17 +9,16 @@ import {
   DrawerContent,
   DrawerCloseButton,
   Flex,
+  FormControl,
   FormLabel,
   Text,
   IconButton,
   Input,
-  InputLeftAddon,
-  InputRightAddon,
-  InputRightElement,
   InputGroup,
   Button,
   Select,
   Stack,
+  Switch,
   Collapse,
   Container,
   Icon,
@@ -45,6 +45,7 @@ import {
 } from '@solana/wallet-adapter-react-ui'
 import { useWallet } from '@solana/wallet-adapter-react'
 import toast from 'react-hot-toast'
+import Moment from "moment"
 
 import { globalContext } from '../store'
 import SendPaymentToTreasury from './SendPaymentToTreasury'
@@ -59,32 +60,36 @@ export default function Navbar() {
   const { publicKey } = useWallet()
   const walletPublicKey = publicKey?.toString()
   const { user } = globalState
-    const {
-        isOpen: isProfileOpen,
-        onOpen: onOpenProfile,
-        onClose: onCloseProfile,
-    } = useDisclosure()
+  const {
+    isOpen: isProfileOpen,
+    onOpen: onOpenProfile,
+    onClose: onCloseProfile,
+  } = useDisclosure()
+  const [newUser, setNewUser] = useState(undefined as IUser | undefined)
+
+  console.log('user', user)
 
   useEffect(() => {
     if ( walletPublicKey ) {
       console.log( 'public key!', walletPublicKey)
-      signInUser( walletPublicKey)
+      signInUser( walletPublicKey )
     } else if ( !walletPublicKey && user ) {
       signOutUser()
     }
   }, [ publicKey ])
 
   const signInUser = async ( walletPublicKey: string ): Promise<void> => {
+    UserService.setSessionAuth( walletPublicKey )
     let user
     try {
-      user = await UserService.get( walletPublicKey )
+      user = await UserService.get()
     } catch( err ) {
       console.log( 'err get user', err )
 
       return
     }
 
-    if ( user ) {
+    if ( user?.verified ) {
       dispatch({ type: 'SET_USER', payload: user })
       toast.custom(
         <Notification
@@ -92,6 +97,14 @@ export default function Navbar() {
           variant="success"
         />
       )
+    } else if ( user ) {
+        setNewUser( user )
+        toast.custom(
+            <Notification
+              message="Welcome!"
+              variant="success"
+            />
+          )
     } else {
         dispatch({ type: 'SET_USER', payload: {
             id: undefined,
@@ -111,6 +124,8 @@ export default function Navbar() {
   }
 
   const signOutUser = (): void => {
+    UserService.setSessionAuth( '' )
+    onCloseProfile()
     dispatch({ type: 'SET_USER', payload: undefined })
     toast.custom(
       <Notification
@@ -128,6 +143,7 @@ export default function Navbar() {
     } )
     if ( !user ) return false
     dispatch({ type: 'SET_USER', payload: user })
+    setNewUser( undefined )
     toast.custom(
         <Notification
             message={ "Successfully created user!" }
@@ -211,7 +227,7 @@ export default function Navbar() {
 
           <ProfileDrawer
             isOpen={isProfileOpen}
-            user={user}
+            user={user || newUser}
 
             onClose={onCloseProfile}
             onCreateUser={createUser}
@@ -234,8 +250,11 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
 }) {
     const firstField = useRef()
     const [ myUser, setMyUser ] = useState(user)
-    const isNewUser = !myUser?.id
+    const isVerified = !!myUser?.verified
     const [ verifyCode, setVerifyCode ] = useState(undefined as number | undefined)
+    const inactiveDate = user?.inactiveDate ? Moment( user.inactiveDate ) : undefined
+    const isTrial = user?.createdAt ? Moment( user.createdAt ).add({ hours: 12 }).isBefore( Moment() ) : false
+    const isActive = inactiveDate ? Moment().isBefore( inactiveDate ) : false
 
     useEffect(() => {
         setMyUser( user )
@@ -278,44 +297,90 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
                                 fontSize="sm"
                                 width="xl"
                                 value={myUser?.discordName}
+                                disabled={isVerified}
+                                backgroundColor={isVerified ? "gray.300" : undefined }
                                 onChange={ e => setMyUser({ ...myUser, discordName: e.target.value })}
                             />
                         </InputGroup>
 
-                        <FormLabel htmlFor="url">Discord Verification Code</FormLabel>
-                        <InputGroup fontSize="sm">
-                            <Input
-                                type="text"
-                                id="verifyCode"
-                                placeholder="123456"
-                                fontSize="sm"
-                                width="xl"
-                                value={verifyCode}
-                                onChange={ e => setVerifyCode( parseInt( e.target.value )) }
-                            />
-                        </InputGroup>
+                        { !isVerified &&
+                            <>
+                                <FormLabel htmlFor="verifyCode">Discord Verification Code</FormLabel>
+                                <InputGroup fontSize="sm">
+                                    <Input
+                                        type="text"
+                                        id="verifyCode"
+                                        placeholder="123456"
+                                        fontSize="sm"
+                                        width="xl"
+                                        value={verifyCode}
+                                        onChange={ e => setVerifyCode( parseInt( e.target.value )) }
+                                    />
+                                </InputGroup>
+                            </>
+                        }
+                        { isVerified &&
+                            <Stack>
+                                <FormLabel htmlFor="url">Active Until</FormLabel>
+                                <InputGroup fontSize="sm" marginBottom="3">
+                                    <Input
+                                        type="text"
+                                        id="activeThrough"
+                                        fontSize="sm"
+                                        width="xl"
+                                        value={inactiveDate?.format('LLL')}
+                                        disabled={true}
+                                        backgroundColor={"gray.300"}
+                                    />
+                                </InputGroup>
+                            </Stack>
+                        }
+
+                        <Stack direction="row" mt="2">
+                            { isActive &&
+                                <Badge colorScheme="blue"
+                                    borderRadius="md"
+                                    fontSize="xs"
+                                    paddingX="2"
+                                >
+                                    Active Subscription
+                                </Badge>
+                            }
+                            { isTrial && 
+                                <Badge colorScheme="green"
+                                    borderRadius="md"
+                                    fontSize="xs"
+                                    paddingX="2"
+                                >
+                                    Active Trial
+                                </Badge>
+                            }
+                        </Stack>
                     </Box>
 
-                    { !isNewUser &&
-                        <Box>
+                    { isVerified &&
+                        <Stack paddingY="4">
                             <SendPaymentToTreasury />
-                        </Box>
+                        </Stack>
                     }
 
-                    <Box>
-                        <Button
-                            bg={ 'blue.400' }
-                            color={ 'white' }
-                            _hover={ { bg: 'blue.500' } }
-                            onClick={ async () => {
-                                if ( await onCreateUser(myUser, verifyCode) ) {
-                                    setVerifyCode(undefined)
-                                }
-                            }}
-                        >
-                            Create User
-                        </Button>
-                    </Box>
+                    { !isVerified &&
+                        <Box marginTop="4">
+                            <Button
+                                bg={ 'blue.400' }
+                                color={ 'white' }
+                                _hover={ { bg: 'blue.500' } }
+                                onClick={ async () => {
+                                    if ( await onCreateUser(myUser, verifyCode) ) {
+                                        setVerifyCode(undefined)
+                                    }
+                                }}
+                            >
+                                Create User
+                            </Button>
+                        </Box>
+                    }
+                    
                     </Stack>
                 </DrawerBody>
 

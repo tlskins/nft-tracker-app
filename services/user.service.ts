@@ -1,4 +1,4 @@
-import http from '../http-common'
+import http, { setAuthHeader } from '../http-common'
 import { ICreateTransactionReq, ICreateTransactionResp } from '../types/transaction'
 import { IUser, ICreateUserReq, IUserResp, ILanding, ILandingResp } from '../types/user'
 
@@ -15,9 +15,13 @@ class UserService {
     }
   }
 
-  get = async ( walletPublicKey: string ): Promise<IUser | undefined> => {
+  setSessionAuth = ( auth: string ): void => {
+    setAuthHeader( auth )
+  }
+
+  get = async (): Promise<IUser | undefined> => {
     try {
-      const userResp: IUserResp = await http.get( `users/${walletPublicKey}` )
+      const userResp: IUserResp = await http.get( 'users' )
 
       return userResp?.data?.user
     } catch( err ) {
