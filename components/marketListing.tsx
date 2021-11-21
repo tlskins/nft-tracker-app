@@ -148,8 +148,8 @@ function MarketListingHighlights({ listing, currentRank }: { listing: IMarketLis
         stat={ `${listing.suggestedPrice?.toFixed( 2 ) || '?'}` }
       />
       <SmallStatsCard
-        title="Score"
-        stat={ `${listing.score.toFixed( 2 )}` }
+        title="ROI"
+        stat={ `${( listing.score * 100 ).toFixed( 1 )}%` }
       />
     </SimpleGrid>
   )
@@ -277,7 +277,7 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
         </Text>
 
         { rarityValue &&
-          <Text
+          <Stack
             textTransform={ 'uppercase' }
             fontWeight={ 800 }
             fontSize={ 'xs' }
@@ -297,7 +297,7 @@ function AttributeRarity({ tokenAttribute, rarityCalculator }: IAttributeRariyPr
                 </>
               }
             </SimpleGrid>
-          </Text>
+          </Stack>
         }
       </Stack>
 
@@ -704,14 +704,12 @@ export function CollapsedMarketListing({ listing, currentRank, onClick }: Collap
                 lineHeight="tight"
                 isTruncated
               >
-                <Box justifyContent="space-between" alignContent="center" align="center" width="100%">
-                  <MarketListingHighlights listing={ listing } currentRank={ currentRank } />
-                  {/* { listing.topAttributes?.length > 0 &&
+                <MarketListingHighlights listing={ listing } currentRank={ currentRank } />
+                {/* { listing.topAttributes?.length > 0 &&
                     <Text mt={ 6 } textTransform="uppercase" letterSpacing={ 1.1 } color="gray.700" textStyle="bold">
                       { listing.topAttributes.map( attr => attr.value ).join( ', ' ) }
                     </Text>
                   } */}
-                </Box>
               </Box>
             </Flex>
           </Box>

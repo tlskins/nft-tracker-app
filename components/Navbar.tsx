@@ -69,11 +69,10 @@ export default function Navbar() {
   console.log('user', user)
 
   useEffect(() => {
+    console.log( 'public key changed: ', walletPublicKey)
+
     if ( walletPublicKey ) {
-      console.log( 'public key!', walletPublicKey)
       signInUser( walletPublicKey )
-    } else if ( !walletPublicKey && user ) {
-      signOutUser()
     }
   }, [ publicKey ])
 
@@ -91,7 +90,7 @@ export default function Navbar() {
   }
 
   const signInUser = async ( walletPublicKey: string ): Promise<void> => {
-    UserService.setSessionAuth( walletPublicKey )
+    UserService.setSession( walletPublicKey )
     let user
     try {
       user = await UserService.get()
@@ -127,7 +126,7 @@ export default function Navbar() {
   }
 
   const signOutUser = (): void => {
-    UserService.setSessionAuth( '' )
+    UserService.clearSession()
     onCloseProfile()
     dispatch({ type: 'SET_USER', payload: undefined })
     toast.success("Goodbye!", {
@@ -228,6 +227,7 @@ export default function Navbar() {
 
             onClose={onCloseProfile}
             onCreateUser={createUser}
+            onSignOut={signOutUser}
           />
         </Stack>
       </Flex>
@@ -239,19 +239,32 @@ export default function Navbar() {
   )
 }
 
-function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
+function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
     isOpen: boolean,
+    user: IUser,
+
     onClose: () => void,
     onCreateUser: (user: IUser, verifyCode: number) => Promise<boolean>,
-    user: IUser,
+    onSignOut: () => void;
 }) {
     const firstField = useRef()
     const [ myUser, setMyUser ] = useState(user)
     const isVerified = !!myUser?.verified
     const [ verifyCode, setVerifyCode ] = useState(undefined as number | undefined)
-    const inactiveDate = user?.inactiveDate ? Moment( user.inactiveDate ) : undefined
-    const isTrial = user?.createdAt ? Moment( user.createdAt ).add({ hours: 12 }).isBefore( Moment() ) : false
-    const isActive = inactiveDate ? Moment().isBefore( inactiveDate ) : false
+
+    // clean this up!
+    let inactiveDate = ""
+    const trialCutoff = user ? Moment( user.createdAt ).add({ hours: 12 }) : undefined
+    if ( trialCutoff ) inactiveDate = trialCutoff.format( 'LLL' )
+    const isTrial = user?.createdAt ? Moment( user.createdAt ).add({ hours: 12 }).isAfter( Moment() ) : false
+    const subsInactiveDt = user?.inactiveDate ? Moment( user.inactiveDate ) : undefined
+    if ( subsInactiveDt ) inactiveDate = subsInactiveDt.format( 'LLL' )
+    let isActive = inactiveDate ? Moment().isBefore( inactiveDate ) : false
+    if ( user?.isOG ) {
+      inactiveDate = "Never"
+      isActive = true
+    }
+
 
     useEffect(() => {
         setMyUser( user )
@@ -325,7 +338,7 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
                                         id="activeThrough"
                                         fontSize="sm"
                                         width="xl"
-                                        value={inactiveDate?.format('LLL')}
+                                        value={inactiveDate}
                                         disabled={true}
                                         backgroundColor={"gray.300"}
                                     />
@@ -340,7 +353,7 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
                                     fontSize="xs"
                                     paddingX="2"
                                 >
-                                    Active Subscription
+                                    Active
                                 </Badge>
                             }
                             { isTrial && 
@@ -350,6 +363,15 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
                                     paddingX="2"
                                 >
                                     Active Trial
+                                </Badge>
+                            }
+                            { !isActive && 
+                                <Badge colorScheme="red"
+                                    borderRadius="md"
+                                    fontSize="xs"
+                                    paddingX="2"
+                                >
+                                    Inactive
                                 </Badge>
                             }
                         </Stack>
@@ -382,7 +404,7 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
                 </DrawerBody>
 
                 <DrawerFooter borderTopWidth="1px">
-                    <WalletDisconnectButton />
+                    <WalletDisconnectButton onClick={onSignOut} />
                 </DrawerFooter>
                 </DrawerContent>
             </Drawer>
@@ -407,7 +429,7 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
               <PopoverTrigger>
                 <Link
                   p={2}
-                  href={navItem.href ?? '#'}
+                  href={navItem.href}
                   fontSize={'sm'}
                   fontWeight={500}
                   color={linkColor}

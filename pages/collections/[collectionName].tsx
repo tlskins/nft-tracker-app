@@ -177,6 +177,7 @@ export default function Homepage() {
             />
             :
             <CollapsedMarketListing
+              key={ listing.id }
               listing={ listing }
               currentRank={ currentRank }
               onClick={ () => setExpandedListings({ ...expandedListings, [listing.id]: true })}

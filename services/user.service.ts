@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify'
 
-import http, { setAuthHeader } from '../http-common'
+import http, { setSession, clearSession } from '../http-common'
 import { ICreateTransactionReq, ICreateTransactionResp } from '../types/transaction'
 import { IUser, ICreateUserReq, IUserResp, ILanding, ILandingResp } from '../types/user'
 
@@ -19,8 +19,12 @@ class UserService {
     }
   }
 
-  setSessionAuth = ( auth: string ): void => {
-    setAuthHeader( auth )
+  setSession = ( auth: string ): void => {
+    setSession( auth )
+  }
+
+  clearSession = ( ): void => {
+    clearSession( )
   }
 
   get = async (): Promise<IUser | undefined> => {
@@ -41,7 +45,7 @@ class UserService {
 
       return userResp?.data?.user
     } catch( err ) {
-      toast.error( `Error creating user: ${err.response?.data || 'Unknown'}`, {
+      toast.error( `Error creating user: ${err.response?.data?.message || 'Unknown'}`, {
         position: toast.POSITION.TOP_CENTER,
       })
 

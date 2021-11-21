@@ -69,13 +69,13 @@ export const TestimonialHeading = ({ children }: { children: ReactNode }) => {
 
 export const TestimonialText = ({ children }: { children: ReactNode }) => {
   return (
-    <Text
+    <Stack
       textAlign={ 'center' }
       color={ useColorModeValue( 'gray.600', 'gray.400' ) }
       fontSize={ 'sm' }
     >
       {children}
-    </Text>
+    </Stack>
   )
 }
 

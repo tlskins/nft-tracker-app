@@ -7,17 +7,25 @@ const instance = axios.create({
   },
 })
 
-let session = undefined as string | undefined
-
-export const setAuthHeader = ( auth: string ): void => {
+export const setSession = ( auth: string ): void => {
   console.log( 'setting auth header: ', auth )
   // axios.defaults.headers.common['Authorization'] = auth
-  session = auth
+  // session = auth
+  localStorage.setItem( 'auth', auth )
+}
+
+export const clearSession = (): void => {
+  localStorage.clear()
+}
+
+export const getSession = (): string => {
+  return localStorage.getItem( 'auth' )
 }
 
 instance.interceptors.request.use( async config => {
-  if ( session ) {
-    config.headers.authorization = session
+  const auth = getSession()
+  if ( auth ) {
+    config.headers.authorization = auth
   }
 
   return config
