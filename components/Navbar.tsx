@@ -50,7 +50,15 @@ import Moment from "moment"
 import { globalContext } from '../store'
 import SendPaymentToTreasury from './SendPaymentToTreasury'
 import UserService from '../services/user.service'
-import { IUser, ILanding } from '../types/user'
+import {
+  IUser,
+  ILanding,
+  
+  userIsActive,
+  userInactiveDate,
+  userTrialCutoff,
+  userSubsCutoff,
+} from '../types/user'
 
 
 export default function Navbar() {
@@ -252,19 +260,9 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
     const isVerified = !!myUser?.verified
     const [ verifyCode, setVerifyCode ] = useState(undefined as number | undefined)
 
-    // clean this up!
-    let inactiveDate = ""
-    const trialCutoff = user ? Moment( user.createdAt ).add({ hours: 12 }) : undefined
-    if ( trialCutoff ) inactiveDate = trialCutoff.format( 'LLL' )
-    const isTrial = user?.createdAt ? Moment( user.createdAt ).add({ hours: 12 }).isAfter( Moment() ) : false
-    const subsInactiveDt = user?.inactiveDate ? Moment( user.inactiveDate ) : undefined
-    if ( subsInactiveDt ) inactiveDate = subsInactiveDt.format( 'LLL' )
-    let isActive = inactiveDate ? Moment().isBefore( inactiveDate ) : false
-    if ( user?.isOG ) {
-      inactiveDate = "Never"
-      isActive = true
-    }
-
+    const isTrial = userTrialCutoff( user ) ? Moment().isBefore(userTrialCutoff( user )) : false
+    const isActive = userIsActive( user )
+    const inactiveDate = user?.isOG ? "Never" : userInactiveDate( user )?.format( 'LLL' )
 
     useEffect(() => {
         setMyUser( user )

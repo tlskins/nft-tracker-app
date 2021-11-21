@@ -13,6 +13,7 @@ import Moment from "moment"
 import { globalContext } from '../../store'
 import CollectionTrackerDataService from '../../services/collectionTracker.service'
 import { ICollectionTracker, IRarityCalculator } from '../../types/collectionTracker'
+import { userIsActive } from '../../types/user'
 import MarketListing, { CollapsedMarketListing } from '../../components/marketListing'
 import {
   Testimonial,
@@ -85,7 +86,7 @@ export default function Homepage() {
   return (
     <Box>
       <Box bg={ useColorModeValue( 'gray.100', 'gray.700' ) }>
-        { !user &&
+        { !userIsActive(user) &&
           <UnauthorizedHero />
         }
         { tracker &&
