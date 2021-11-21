@@ -262,7 +262,7 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
 
     const isTrial = userTrialCutoff( user ) ? Moment().isBefore(userTrialCutoff( user )) : false
     const isActive = userIsActive( user )
-    const inactiveDate = user?.isOG ? "Never" : userInactiveDate( user )?.format( 'LLL' )
+    const inactiveDate = user?.isOG ? "Never" : (userInactiveDate( user )?.format( 'LLL' ) || "Unknown")
 
     useEffect(() => {
         setMyUser( user )
@@ -360,7 +360,7 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
                                     fontSize="xs"
                                     paddingX="2"
                                 >
-                                    Active Trial
+                                    Trial
                                 </Badge>
                             }
                             { !isActive && 

@@ -17,19 +17,15 @@ export const userTrialCutoff = ( user?: IUser ): Moment.Moment | undefined => {
 }
 
 export const userSubsCutoff = ( user?: IUser ): Moment.Moment | undefined => {
-  return user ? Moment( user.inactiveDate ).add({ hours: 12 }) : undefined
+  return user?.inactiveDate ? Moment( user.inactiveDate ) : undefined
 }
 
 export const userInactiveDate = ( user?: IUser ): Moment.Moment | undefined => {
   if ( !user ) {
     return undefined
   }
-  const subsEnds = userSubsCutoff( user )
-  if ( subsEnds ) {
-    return subsEnds
-  }
 
-  return userTrialCutoff( user )
+  return userSubsCutoff( user ) || userTrialCutoff( user )
 }
 
 export const userIsActive = ( user?: IUser ): boolean => {
