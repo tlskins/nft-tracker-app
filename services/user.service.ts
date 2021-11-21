@@ -1,3 +1,5 @@
+import { toast } from 'react-toastify'
+
 import http, { setAuthHeader } from '../http-common'
 import { ICreateTransactionReq, ICreateTransactionResp } from '../types/transaction'
 import { IUser, ICreateUserReq, IUserResp, ILanding, ILandingResp } from '../types/user'
@@ -9,7 +11,9 @@ class UserService {
 
       return landingResp?.data
     } catch( err ) {
-      console.log( 'err getting landing ', err.response?.data )
+      toast.error( `Error getting landing data: ${err.response?.data || 'Unknown'}`, {
+        position: toast.POSITION.TOP_CENTER,
+      })
 
       return
     }
@@ -37,7 +41,9 @@ class UserService {
 
       return userResp?.data?.user
     } catch( err ) {
-      console.log( 'err creating ', err.response?.data )
+      toast.error( `Error creating user: ${err.response?.data || 'Unknown'}`, {
+        position: toast.POSITION.TOP_CENTER,
+      })
 
       return
     }
@@ -49,7 +55,9 @@ class UserService {
 
       return resp.user
     } catch( err ) {
-      console.log( 'err creating trx ', err.response?.data )
+      toast.error( `Error extending subscription: ${err.response?.data || 'Unknown'}`, {
+        position: toast.POSITION.TOP_CENTER,
+      })
 
       return
     }

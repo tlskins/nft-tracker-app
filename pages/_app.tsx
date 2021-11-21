@@ -4,7 +4,8 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
 import { AppProps } from 'next/app'
 import dynamic from 'next/dynamic'
 import { FC, ReactNode } from 'react'
-import { Toaster } from 'react-hot-toast'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 import { GlobalStore } from '../store'
 import Navbar from '../components/Navbar'
@@ -33,7 +34,7 @@ const App: FC<AppProps> = ({ Component, pageProps }) => {
           </Head>
           <ChakraProvider>
             <Navbar />
-            <Toaster />
+            <ToastContainer />
             <Component { ...pageProps } />
           </ChakraProvider>
         </GlobalStore>

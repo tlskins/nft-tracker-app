@@ -15,10 +15,9 @@ import {
   FormLabel,
   FormHelperText,
 } from '@chakra-ui/react'
-import toast from 'react-hot-toast'
+import { toast } from 'react-toastify';
 
 import UserService from '../services/user.service'
-import { Notification } from './notification'
 import { globalContext } from '../store'
 
 
@@ -55,23 +54,13 @@ const SendPaymentToTreasury: FC = () => {
       const sigResult = await connection.confirmTransaction( signature, 'processed' )
       console.log( 'sigRes', sigResult )
       if ( !sigResult?.value || sigResult.value.err !== null ) {
-        toast.custom(
-          <Notification
-            message={ `Error processing solana transaction: ${sigResult?.value?.err?.toString()}` }
-            variant="error"
-          />,
-        )
-
-        return
+        throw(new Error(sigResult?.value?.err?.toString() || "Unknown"))
       }
     } catch( err ) {
       console.log('transaction err ', err)
-      toast.custom(
-        <Notification
-          message={ `Error processing solana transaction: ${err?.toString()}` }
-          variant="error"
-        />,
-      )
+      toast.success(`Error processing transaction in the Solana network: ${err}`, {
+        position: toast.POSITION.TOP_CENTER
+      })
     }
 
     // update global store

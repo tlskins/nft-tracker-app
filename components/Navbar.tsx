@@ -44,12 +44,11 @@ import {
   WalletMultiButton,
 } from '@solana/wallet-adapter-react-ui'
 import { useWallet } from '@solana/wallet-adapter-react'
-import toast from 'react-hot-toast'
+import { toast } from 'react-toastify';
 import Moment from "moment"
 
 import { globalContext } from '../store'
 import SendPaymentToTreasury from './SendPaymentToTreasury'
-import { Notification } from './notification'
 import UserService from '../services/user.service'
 import { IUser } from '../types/user'
 
@@ -84,27 +83,21 @@ export default function Navbar() {
     try {
       user = await UserService.get()
     } catch( err ) {
-      console.log( 'err get user', err )
+      console.log( 'user not found', err )
 
       return
     }
 
     if ( user?.verified ) {
       dispatch({ type: 'SET_USER', payload: user })
-      toast.custom(
-        <Notification
-          message="Signed In!"
-          variant="success"
-        />
-      )
+      toast.success("Signed In!", {
+        position: toast.POSITION.TOP_CENTER
+      })
     } else if ( user ) {
         setNewUser( user )
-        toast.custom(
-            <Notification
-              message="Welcome!"
-              variant="success"
-            />
-          )
+        toast.info("Please verify account", {
+            position: toast.POSITION.TOP_CENTER
+        })
     } else {
         dispatch({ type: 'SET_USER', payload: {
             id: undefined,
@@ -114,12 +107,9 @@ export default function Navbar() {
             discordId: '',
             inactiveDate: '',
         } })
-        toast.custom(
-          <Notification
-            message="Welcome!"
-            variant="success"
-          />
-        )
+        toast.info("Welcome!", {
+            position: toast.POSITION.TOP_CENTER
+        })
     }
   }
 
@@ -127,12 +117,9 @@ export default function Navbar() {
     UserService.setSessionAuth( '' )
     onCloseProfile()
     dispatch({ type: 'SET_USER', payload: undefined })
-    toast.custom(
-      <Notification
-        message="Signed Out!"
-        variant="success"
-      />
-    )
+    toast.success("Goodbye!", {
+        position: toast.POSITION.TOP_CENTER
+      })
   }
 
   const createUser = async ({ walletPublicKey, discordName }: IUser, verifyCode: number): Promise<boolean> => {
@@ -144,12 +131,9 @@ export default function Navbar() {
     if ( !user ) return false
     dispatch({ type: 'SET_USER', payload: user })
     setNewUser( undefined )
-    toast.custom(
-        <Notification
-            message={ "Successfully created user!" }
-            variant="success"
-        />
-    )
+    toast.success("User created!", {
+        position: toast.POSITION.TOP_CENTER
+      })
 
     return true
   }
@@ -394,43 +378,41 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
   }
 
   const DesktopNav = () => {
-    const linkColor = useColorModeValue( 'gray.600', 'gray.200' )
-    const linkHoverColor = useColorModeValue( 'gray.800', 'white' )
-    const popoverContentBgColor = useColorModeValue( 'white', 'gray.800' )
+    const linkColor = useColorModeValue('gray.600', 'gray.200');
+    const linkHoverColor = useColorModeValue('gray.800', 'white');
+    const popoverContentBgColor = useColorModeValue('white', 'gray.800');
   
     return (
-      <Stack direction={ 'row' } spacing={ 4 }>
-        {NAV_ITEMS.map( navItem => (
-          <Box key={ navItem.label }>
-            <Popover trigger={ 'hover' } placement={ 'bottom-start' }>
+      <Stack direction={'row'} spacing={4}>
+        {NAV_ITEMS.map((navItem) => (
+          <Box key={navItem.label}>
+            <Popover trigger={'hover'} placement={'bottom-start'}>
               <PopoverTrigger>
                 <Link
-                  p={ 2 }
-                  href={ navItem.href ?? '#' }
-                  fontSize={ 'sm' }
-                  fontWeight={ 500 }
-                  color={ linkColor }
-                  _hover={ {
+                  p={2}
+                  href={navItem.href ?? '#'}
+                  fontSize={'sm'}
+                  fontWeight={500}
+                  color={linkColor}
+                  _hover={{
                     textDecoration: 'none',
                     color: linkHoverColor,
-                  } }
-                >
+                  }}>
                   {navItem.label}
                 </Link>
               </PopoverTrigger>
   
               {navItem.children && (
                 <PopoverContent
-                  border={ 0 }
-                  boxShadow={ 'xl' }
-                  bg={ popoverContentBgColor }
-                  p={ 4 }
-                  rounded={ 'xl' }
-                  minW={ 'sm' }
-                >
+                  border={0}
+                  boxShadow={'xl'}
+                  bg={popoverContentBgColor}
+                  p={4}
+                  rounded={'xl'}
+                  minW={'sm'}>
                   <Stack>
-                    {navItem.children.map( child => (
-                      <DesktopSubNav key={ child.label } { ...child } />
+                    {navItem.children.map((child) => (
+                      <DesktopSubNav key={child.label} {...child} />
                     ))}
                   </Stack>
                 </PopoverContent>
@@ -439,7 +421,7 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
           </Box>
         ))}
       </Stack>
-    )
+    );
   }
   
   const DesktopSubNav = ({ label, href, subLabel }: NavItem ) => {
