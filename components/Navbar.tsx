@@ -50,7 +50,7 @@ import Moment from "moment"
 import { globalContext } from '../store'
 import SendPaymentToTreasury from './SendPaymentToTreasury'
 import UserService from '../services/user.service'
-import { IUser } from '../types/user'
+import { IUser, ILanding } from '../types/user'
 
 
 export default function Navbar() {
@@ -58,7 +58,7 @@ export default function Navbar() {
   const { globalState, dispatch } = useContext( globalContext )
   const { publicKey } = useWallet()
   const walletPublicKey = publicKey?.toString()
-  const { user } = globalState
+  const { user, landing } = globalState
   const {
     isOpen: isProfileOpen,
     onOpen: onOpenProfile,
@@ -76,6 +76,19 @@ export default function Navbar() {
       signOutUser()
     }
   }, [ publicKey ])
+
+  useEffect(() => {
+    if ( !landing ) {
+      loadLanding()
+    }
+  }, [ landing ])
+
+  const loadLanding = async (): Promise<void> => {
+      const landing = await UserService.getLanding()
+      if ( landing ) {
+        dispatch({ type: 'SET_LANDING', payload: landing })
+      }
+  }
 
   const signInUser = async ( walletPublicKey: string ): Promise<void> => {
     UserService.setSessionAuth( walletPublicKey )
@@ -171,7 +184,7 @@ export default function Navbar() {
             fontFamily={ 'heading' }
             color={ useColorModeValue( 'gray.800', 'white' ) }
           >
-              Logo
+              BIBLE
           </Text>
 
           <Flex display={ { base: 'none', md: 'flex' } } ml={ 10 }>
@@ -381,10 +394,14 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
     const linkColor = useColorModeValue('gray.600', 'gray.200');
     const linkHoverColor = useColorModeValue('gray.800', 'white');
     const popoverContentBgColor = useColorModeValue('white', 'gray.800');
+
+    const { globalState, dispatch } = useContext( globalContext )
+    const { landing } = globalState
+    const navItems = getNavItems(landing)
   
     return (
       <Stack direction={'row'} spacing={4}>
-        {NAV_ITEMS.map((navItem) => (
+        {navItems.map((navItem) => (
           <Box key={navItem.label}>
             <Popover trigger={'hover'} placement={'bottom-start'}>
               <PopoverTrigger>
@@ -462,13 +479,17 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser }: {
   }
 
   const MobileNav = () => {
+    const { globalState, dispatch } = useContext( globalContext )
+    const { landing } = globalState
+    const navItems = getNavItems(landing)
+
     return (
       <Stack
         bg={ useColorModeValue( 'white', 'gray.800' ) }
         p={ 4 }
         display={ { md: 'none' } }
       >
-        {NAV_ITEMS.map( navItem => (
+        {navItems.map( navItem => (
           <MobileNavItem key={ navItem.label } { ...navItem } />
         ))}
       </Stack>
@@ -535,43 +556,16 @@ const MobileNavItem = ({ label, children, href }: NavItem ) => {
     href?: string;
   }
 
-const NAV_ITEMS: Array<NavItem> = [
-  {
-    label: 'Inspiration',
-    children: [
-      {
-        label: 'Explore Design Work',
-        subLabel: 'Trending Design to inspire you',
-        href: '#',
-      },
-      {
-        label: 'New & Noteworthy',
-        subLabel: 'Up-and-coming Designers',
-        href: '#',
-      },
-    ],
-  },
-  {
-    label: 'Find Work',
-    children: [
-      {
-        label: 'Job Board',
-        subLabel: 'Find your dream design job',
-        href: '#',
-      },
-      {
-        label: 'Freelance Projects',
-        subLabel: 'An exclusive list for contract work',
-        href: '#',
-      },
-    ],
-  },
-  {
-    label: 'Learn Design',
-    href: '#',
-  },
-  {
-    label: 'Hire Designers',
-    href: '#',
-  },
-]
+const getNavItems = (landing: ILanding): Array<NavItem> =>  {
+  return [
+    {
+      label: 'Collections',
+      children: !landing ? [] : Object.keys( landing.collections ).map( key => {
+        return({
+          label: key,
+          href: landing.collections[key],
+        })
+      }),
+    },
+  ]
+}

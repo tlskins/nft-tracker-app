@@ -53,6 +53,10 @@ class UserService {
     try {
       const resp: ICreateTransactionResp = await http.post( '/users/transactions', req )
 
+      toast.success( 'Subscription extended. Please allow up to 5 mins for discord roles to be updated.', {
+        position: toast.POSITION.TOP_CENTER,
+      })
+
       return resp.user
     } catch( err ) {
       toast.error( `Error extending subscription: ${err.response?.data || 'Unknown'}`, {

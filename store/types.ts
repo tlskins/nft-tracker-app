@@ -1,8 +1,9 @@
 import { Dispatch } from 'react'
-import { IUser } from '../types/user'
+import { IUser, ILanding } from '../types/user'
 
 export interface GlobalStateInterface {
   user?: IUser;
+  landing?: ILanding;
   persistenceType: string;
 }
 

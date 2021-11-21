@@ -8,6 +8,11 @@ const Reducer = ( state: GlobalStateInterface, action: ActionType ): any => {
       ...state,
       user: action.payload,
     }
+  case 'SET_LANDING':
+    return {
+      ...state,
+      landing: action.payload,
+    }
   case 'PURGE_STATE':
     return initialState
   default:

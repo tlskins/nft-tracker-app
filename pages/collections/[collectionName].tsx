@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useRouter } from 'next/router'
 import {
   Box,
@@ -9,8 +9,10 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react'
 import Moment from "moment"
+
+import { globalContext } from '../../store'
 import CollectionTrackerDataService from '../../services/collectionTracker.service'
-import { ICollectionResponse, ICollectionTracker, IRarityCalculator } from '../../types/collectionTracker'
+import { ICollectionTracker, IRarityCalculator } from '../../types/collectionTracker'
 import MarketListing, { CollapsedMarketListing } from '../../components/marketListing'
 import {
   Testimonial,
@@ -20,10 +22,12 @@ import {
   TestimonialContent,
   TestimonialText,
 } from '../../components/testimonial'
+import UnauthorizedHero from '../../components/UnauthorizedHero'
 
 export default function Homepage() {
   const router = useRouter()
   console.log(router.query)
+  const { globalState: { user } } = useContext( globalContext )
   const { collectionName } = router.query
   const [ tracker, setTracker ] = useState( undefined as ICollectionTracker | undefined )
   const [ rarityCalculator, setRarityCalculator ] = useState( undefined as IRarityCalculator | undefined )
@@ -70,17 +74,20 @@ export default function Homepage() {
   }
 
   useEffect(() => {
-    if ( collectionName ) {
+    if ( collectionName && user ) {
       loadCollectionData(collectionName as string ).catch( err => console.log( err ))
       loadRarityData(collectionName as string ).catch( err => console.log( err ))
     }
-  }, [collectionName])
+  }, [collectionName, user])
 
   console.log( 'tracker', tracker )
 
   return (
     <Box>
       <Box bg={ useColorModeValue( 'gray.100', 'gray.700' ) }>
+        { !user &&
+          <UnauthorizedHero />
+        }
         { tracker &&
           <Container maxW={ '7xl' } py={ 16 } as={ Stack } spacing={ 12 }>
             <Stack spacing={ 0 } align={ 'center' }>
