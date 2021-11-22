@@ -1,6 +1,7 @@
 import {
   Box,
   Badge,
+  Code,
   Drawer,
   DrawerBody,
   DrawerFooter,
@@ -15,6 +16,7 @@ import {
   IconButton,
   Input,
   InputGroup,
+  ListItem,
   Button,
   Select,
   Stack,
@@ -23,9 +25,11 @@ import {
   Container,
   Icon,
   Link,
+  OrderedList,
   Popover,
   PopoverTrigger,
   PopoverContent,
+  Tag,
   Textarea,
   VStack,
   useColorModeValue,
@@ -190,8 +194,12 @@ export default function Navbar() {
             textAlign={ useBreakpointValue({ base: 'center', md: 'left' }) }
             fontFamily={ 'heading' }
             color={ useColorModeValue( 'gray.800', 'white' ) }
+            letterSpacing="wider"
+            fontWeight="semibold"
           >
+            <Link href={"/"}>
               BIBLE
+            </Link>
           </Text>
 
           <Flex display={ { base: 'none', md: 'flex' } } ml={ 10 }>
@@ -207,18 +215,18 @@ export default function Navbar() {
         >
           { publicKey &&
             <>
-                <Button
-                    display={ { base: 'none', md: 'inline-flex' } }
-                    fontSize={ 'sm' }
-                    fontWeight={ 600 }
-                    color={ 'white' }
-                    bg={ 'pink.400' }
-                    href={ '#' }
-                    _hover={ { bg: 'pink.300' } }
-                    onClick={onOpenProfile}
-                >
-                    Profile
-                </Button>
+              <Button
+                display={ { base: 'none', md: 'inline-flex' } }
+                fontSize={ 'sm' }
+                fontWeight={ 600 }
+                color={ 'white' }
+                bg={ 'pink.400' }
+                href={ '#' }
+                _hover={ { bg: 'pink.300' } }
+                onClick={onOpenProfile}
+              >
+                  Profile
+              </Button>
             </>
           }
           { !publicKey &&
@@ -315,40 +323,68 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
                             <>
                                 <FormLabel htmlFor="verifyCode">Discord Verification Code</FormLabel>
                                 <Text fontSize="x-small" mb="1">
-                                  Join{" "}
-                                  <Link href={"https://discord.gg/tZKuYzx9pm"} target="_blank" color="blue" textDecoration="underline">
-                                  Discord
-                                  </Link>
-                                  {" "}and DM Degen Bible Bot /verify
+                                  <OrderedList width="full">
+                                    <ListItem>
+                                      Join our {" "}
+                                      <Link href={"https://discord.gg/tZKuYzx9pm"} target="_blank" color="blue" textDecoration="underline">
+                                      Discord Server
+                                      </Link>
+                                    </ListItem>
+
+                                    <ListItem>
+                                      <Text display="table">
+                                        Send a{" "}<Code
+                                          children="/verify"
+                                          fontSize="x-small"
+                                          textAlign="center"
+                                        />
+                                        DM to{" "}
+                                        <Tag
+                                          fontSize="x-small"
+                                          colorScheme="red"
+                                          size="sm"
+                                          variant="solid" 
+                                          display="table-cell"
+                                          verticalAlign="middle"
+                                        >
+                                          Degen Bible Bot
+                                        </Tag>
+                                      </Text>
+                                    </ListItem>
+
+                                    <ListItem>
+                                      The bot will reply with a code, enter it below
+                                    </ListItem>
+                                  </OrderedList>
                                 </Text>
                                 
                                 <InputGroup fontSize="sm">
                                   <Input
-                                      type="text"
-                                      id="verifyCode"
-                                      placeholder="123456"
-                                      fontSize="sm"
-                                      width="xl"
-                                      value={verifyCode}
-                                      onChange={ e => setVerifyCode( parseInt( e.target.value )) }
+                                    type="text"
+                                    id="verifyCode"
+                                    placeholder="123456"
+                                    fontSize="sm"
+                                    width="xl"
+                                    value={verifyCode}
+                                    onChange={ e => setVerifyCode( parseInt( e.target.value )) }
                                   />
                                 </InputGroup>
                             </>
                         }
                         { isVerified &&
                             <Stack>
-                                <FormLabel htmlFor="url">Active Until</FormLabel>
-                                <InputGroup fontSize="sm" marginBottom="3">
-                                    <Input
-                                        type="text"
-                                        id="activeThrough"
-                                        fontSize="sm"
-                                        width="xl"
-                                        value={inactiveDate}
-                                        disabled={true}
-                                        backgroundColor={"gray.300"}
-                                    />
-                                </InputGroup>
+                              <FormLabel htmlFor="url">Active Until</FormLabel>
+                              <InputGroup fontSize="sm" marginBottom="3">
+                                <Input
+                                    type="text"
+                                    id="activeThrough"
+                                    fontSize="sm"
+                                    width="xl"
+                                    value={inactiveDate}
+                                    disabled={true}
+                                    backgroundColor={"gray.300"}
+                                />
+                              </InputGroup>
                             </Stack>
                         }
 
@@ -392,16 +428,17 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
                     { !isVerified &&
                         <Box marginTop="4">
                             <Button
-                                bg={ 'blue.400' }
-                                color={ 'white' }
-                                _hover={ { bg: 'blue.500' } }
-                                onClick={ async () => {
-                                    if ( await onCreateUser(myUser, verifyCode) ) {
-                                        setVerifyCode(undefined)
-                                    }
-                                }}
+                              bg={ 'blue.400' }
+                              color={ 'white' }
+                              disabled={ !(myUser?.discordName?.length > 0) || verifyCode === undefined }
+                              _hover={ { bg: 'blue.500' } }
+                              onClick={ async () => {
+                                if ( await onCreateUser(myUser, verifyCode) ) {
+                                    setVerifyCode(undefined)
+                                }
+                              }}
                             >
-                                Create User
+                              Create User
                             </Button>
                         </Box>
                     }
