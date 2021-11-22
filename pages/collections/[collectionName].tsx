@@ -4,6 +4,7 @@ import {
   Box,
   Heading,
   Text,
+  Select,
   Stack,
   Container,
   useColorModeValue,
@@ -12,7 +13,7 @@ import Moment from "moment"
 
 import { globalContext } from '../../store'
 import CollectionTrackerDataService from '../../services/collectionTracker.service'
-import { ICollectionTracker, IRarityCalculator } from '../../types/collectionTracker'
+import { ICollectionTracker, IMarketListing, IRarityCalculator } from '../../types/collectionTracker'
 import { userIsActive } from '../../types/user'
 import MarketListing, { CollapsedMarketListing } from '../../components/marketListing'
 import {
@@ -33,6 +34,8 @@ export default function Homepage() {
   const [ tracker, setTracker ] = useState( undefined as ICollectionTracker | undefined )
   const [ rarityCalculator, setRarityCalculator ] = useState( undefined as IRarityCalculator | undefined )
   const [ expandedListings, setExpandedListings ] = useState( {} as any)
+  const [sortBy, setSortBy] = useState("ROI")
+
   const {
     currentBest,
     marketSummary,
@@ -81,7 +84,29 @@ export default function Homepage() {
     }
   }, [collectionName, user])
 
-  console.log( 'tracker', tracker )
+  const sortListings = (sortBy: string) => (a: IMarketListing, b: IMarketListing): number => {
+    if ( sortBy === "ROI" ) {
+      return b.score - a.score
+    } else if ( sortBy === "Rank" ) {
+      return a.rank - b.rank
+    } else if ( sortBy === "Min Price" ) {
+      return a.price - b.price
+    }
+    return 0
+  }
+
+  useEffect(() => {
+    if ( sortBy && tracker ) {
+      const sortedTracker = {
+        ...tracker,
+        currentListings: tracker.currentListings.sort(sortListings(sortBy))
+      }
+      setExpandedListings({})
+      setTracker(sortedTracker)
+    }
+  }, [sortBy])
+
+  console.log( 'tracker', sortBy, tracker )
 
   return (
     <Box>
@@ -164,7 +189,25 @@ export default function Homepage() {
         }
       </Box>
 
+      <Stack border="red" direction="row" maxWidth="md" marginTop="2" marginX="auto" py="4">
+        <Select
+          placeholder=" - Sort Listings By - "
+          backgroundColor="teal"
+          color="white"
+          boxShadow="md"
+          fontWeight="700"
+          textTransform="uppercase"
+          letterSpacing="wider"
+          onChange={ e => setSortBy(e.target.value)}
+        >
+          <option value="ROI">ROI</option>
+          <option value="Rank">Rank</option>
+          <option value="Min Price">Min Price</option>
+        </Select>
+      </Stack>
+
       <Box bg={ useColorModeValue( 'white.100', 'gray.700' ) }>
+
         { currentListings?.map(( listing, i ) => {
           const currentRank = i + 1
           return(
