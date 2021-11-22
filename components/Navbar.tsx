@@ -82,7 +82,6 @@ export default function Navbar() {
 
   useEffect(() => {
     console.log( 'public key changed: ', walletPublicKey)
-
     if ( walletPublicKey ) {
       signInUser( walletPublicKey )
     }
@@ -155,7 +154,7 @@ export default function Navbar() {
     if ( !user ) return false
     dispatch({ type: 'SET_USER', payload: user })
     setNewUser( undefined )
-    toast.success("User created!", {
+    toast.success("User created! Please allow up to 5 minutes for the bot to update your access to the discord channels and and the site.", {
         position: toast.POSITION.TOP_CENTER
       })
 
@@ -196,6 +195,7 @@ export default function Navbar() {
             color={ useColorModeValue( 'gray.800', 'white' ) }
             letterSpacing="wider"
             fontWeight="semibold"
+            textDecoration="underline"
           >
             <Link href={"/"}>
               BIBLE
