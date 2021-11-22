@@ -26,6 +26,10 @@ import {
 } from '../../components/testimonial'
 import UnauthorizedHero from '../../components/UnauthorizedHero'
 
+const getNumChgStr = (num: number, chg: number): string => {
+  return `${num.toFixed(2)} (${chg < 0 ? "-" : "+"}${Math.abs(chg).toFixed(0)}%)`;
+};
+
 export default function Homepage() {
   const router = useRouter()
   console.log(router.query)
@@ -54,10 +58,15 @@ export default function Homepage() {
     listingFloor: lastDayFloor,
     listingFloorChange: floorChgDay,
     totalSales,
+    totalSalesChange,
     avgSalePrice: averageSalesPrice,
+    avgSalePriceChange,
     totalSalesVolume: salesVolume,
   } = dayMarketSummary || {}
-  const { listingFloor: lastWeekFloor } = weekMarketSummary || {}
+  const {
+    listingFloor: lastWeekFloor,
+    listingFloorChange: floorChgWk,
+  } = weekMarketSummary || {}
   const hourlySales = totalSales / 12;
 
   const loadCollectionData = async (collection: string) => {
@@ -135,9 +144,9 @@ export default function Homepage() {
                   </TestimonialHeading>
                   <TestimonialText>
                     <Container w="100%">
-                      Current { currentFloor } { floorChgHour && `(${floorChgHour.toFixed( 2 )}%)` }<br />
-                      Last Day Avg { lastDayFloor } { floorChgDay && `(${floorChgDay.toFixed( 2 )}%)` }<br />
-                      Last Week Avg { lastWeekFloor }<br />
+                      Current { getNumChgStr(currentFloor, floorChgHour) }<br />
+                      Last Day Avg { getNumChgStr(lastDayFloor, floorChgDay) }<br />
+                      Last Week Avg { getNumChgStr(lastWeekFloor, floorChgWk) }<br />
                     </Container>
                   </TestimonialText>
                 </RegularContent>
@@ -152,7 +161,7 @@ export default function Homepage() {
                     <Container w="100%">
                       { currentBest.title } <br />
                       { currentBest.rarity } @ { currentBest.price.toFixed( 2 ) }<br />
-                    Score: { currentBest.score.toFixed( 2 ) } |
+                    ROI: { (currentBest.score * 100).toFixed( 1 ) }% |
                     Suggested Price: { currentBest.suggestedPrice?.toFixed( 2 ) || "?" }<br />
                     </Container>
                   </TestimonialText>
@@ -171,13 +180,8 @@ export default function Homepage() {
                   </TestimonialHeading>
                   <TestimonialText>
                     <Container w="100%">
-                      Hourly Sales: { hourlySales?.toFixed( 2 ) || 'N/A' }<br />
-                      Last Week Avg { averageSalesPrice?.toFixed( 2 ) || 'N/A' }<br />
-                      { salesVolume &&
-                        <>
-                          Sales Volume { salesVolume.toFixed( 2 ) || 'N/A' }<br />
-                        </>
-                      }
+                      Hourly Sales: { getNumChgStr(totalSales, totalSalesChange) }<br />
+                      Current Avg Sale: { getNumChgStr(averageSalesPrice, avgSalePriceChange) }<br />
                       <br />
                     </Container>
                   </TestimonialText>
