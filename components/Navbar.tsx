@@ -314,16 +314,24 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
                         { !isVerified &&
                             <>
                                 <FormLabel htmlFor="verifyCode">Discord Verification Code</FormLabel>
+                                <Text fontSize="x-small" mb="1">
+                                  Join{" "}
+                                  <Link href={"https://discord.gg/tZKuYzx9pm"} target="_blank" color="blue" textDecoration="underline">
+                                  Discord
+                                  </Link>
+                                  {" "}and DM Degen Bible Bot /verify
+                                </Text>
+                                
                                 <InputGroup fontSize="sm">
-                                    <Input
-                                        type="text"
-                                        id="verifyCode"
-                                        placeholder="123456"
-                                        fontSize="sm"
-                                        width="xl"
-                                        value={verifyCode}
-                                        onChange={ e => setVerifyCode( parseInt( e.target.value )) }
-                                    />
+                                  <Input
+                                      type="text"
+                                      id="verifyCode"
+                                      placeholder="123456"
+                                      fontSize="sm"
+                                      width="xl"
+                                      value={verifyCode}
+                                      onChange={ e => setVerifyCode( parseInt( e.target.value )) }
+                                  />
                                 </InputGroup>
                             </>
                         }
