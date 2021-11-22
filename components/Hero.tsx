@@ -153,6 +153,16 @@ export default function Hero() {
               'https://hkgwtdvfyh.medianetwork.cloud/unsafe/600x600/filters:format(webp)/www.arweave.net/-A2jPbTx8H18Z8gp8vD6S39Un0yVh5NgkBXQbc7AJdE?ext=jpeg',
               'https://hkgwtdvfyh.medianetwork.cloud/unsafe/600x600/filters:format(webp)/www.arweave.net/yzTLchEEl4o-BV5nkwHlcNLnMUVs_4MYJMzTnsosDM4/data.png',
               'https://hkgwtdvfyh.medianetwork.cloud/unsafe/600x600/filters:format(webp)/www.arweave.net/0rgFPUstRAk7eYm0Y4LGJN7oCErnP9LGgDOZgK43NfY/data.png',
+              'https://arweave.net/BWIb_msV2u9hliu_NXo4HPieNxR-8jKt6shuJH9By74',
+              'http://arweave.net/PlSJkjPfl2fNRFhfi5xJOiAd4Yhf-SCbOVC0ubrORoU/data.png',
+              'https://hkgwtdvfyh.medianetwork.cloud/unsafe/600x600/filters:format(webp)/www.arweave.net/E8Xf8Mk1RfAUzZTwAhmdnrJanJ97pj4BbnEoNjgqu7Y/data.png',
+              'https://hkgwtdvfyh.medianetwork.cloud/unsafe/600x600/filters:format(webp)/cdn.piggygang.com/imgs/f3379636f59c32e9eba8b470dd37c65d.jpg',
+              'https://hkgwtdvfyh.medianetwork.cloud/unsafe/600x600/filters:format(webp)/www.arweave.net/j1a9H2S3D69GgwUWXhJFEzOcZU-DcRdZ_e1Jyll_5VM/data.png',
+              'https://hkgwtdvfyh.medianetwork.cloud/unsafe/600x600/filters:format(webp)/www.arweave.net/MIRFETfmVCAbxDcPwQMt990rxNWI1VAhgAyO-gVJEos/data.png',
+              'https://hkgwtdvfyh.medianetwork.cloud/unsafe/600x600/filters:format(webp)/www.arweave.net/w_likkYBI5Z9niYD-nGOpkpUyNdPKLhtDhfvLzF95-Y/data.png',
+              'http://arweave.net/i7Z4XpJtEYR6PLOmo2qxFSlY-_6V2dcIMO_mYD7LgvI/data.png',
+              'https://hkgwtdvfyh.medianetwork.cloud/unsafe/600x600/filters:format(webp)/www.arweave.net/UTlgFHokJxqzo1jgWuCd07DPS0ESYgOA-ojKSNyYXIE/data.png',
+              'https://cdn.alpha.art/opt/d/c/dc94c0814f654348aa2a3736eebdd47f7cdc33e6/340.webp',
             ] }
           />
           {/* <Image
