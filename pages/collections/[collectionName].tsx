@@ -193,22 +193,24 @@ export default function Homepage() {
         }
       </Box>
 
-      <Stack border="red" direction="row" maxWidth="md" marginTop="2" marginX="auto" py="4">
-        <Select
-          placeholder=" - Sort Listings By - "
-          backgroundColor="teal"
-          color="white"
-          boxShadow="md"
-          fontWeight="700"
-          textTransform="uppercase"
-          letterSpacing="wider"
-          onChange={ e => setSortBy(e.target.value)}
-        >
-          <option value="ROI">ROI</option>
-          <option value="Rank">Rank</option>
-          <option value="Min Price">Min Price</option>
-        </Select>
-      </Stack>
+      { currentListings?.length > 0 &&
+        <Stack border="red" direction="row" maxWidth="md" marginTop="2" marginX="auto" py="4">
+          <Select
+            placeholder=" - Sort Listings By - "
+            backgroundColor="teal"
+            color="white"
+            boxShadow="md"
+            fontWeight="700"
+            textTransform="uppercase"
+            letterSpacing="wider"
+            onChange={ e => setSortBy(e.target.value)}
+          >
+            <option value="ROI">ROI</option>
+            <option value="Rank">Rank</option>
+            <option value="Min Price">Min Price</option>
+          </Select>
+        </Stack>
+      }
 
       <Box bg={ useColorModeValue( 'white.100', 'gray.700' ) }>
 
