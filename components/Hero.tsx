@@ -1,7 +1,6 @@
 import {
   Container,
   SimpleGrid,
-  Image,
   Flex,
   Heading,
   Text,
@@ -10,11 +9,6 @@ import {
   Icon,
   useColorModeValue,
 } from '@chakra-ui/react'
-import {
-  IoAnalyticsSharp,
-  IoLogoBitcoin,
-  IoSearchSharp,
-} from 'react-icons/io5'
 import { GoDeviceMobile } from 'react-icons/go'
 import { GiMagnifyingGlass } from 'react-icons/gi'
 import { AiFillCheckCircle } from 'react-icons/ai'

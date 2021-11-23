@@ -10,7 +10,6 @@ import {
   DrawerContent,
   DrawerCloseButton,
   Flex,
-  FormControl,
   FormLabel,
   Text,
   IconButton,
@@ -18,9 +17,7 @@ import {
   InputGroup,
   ListItem,
   Button,
-  Select,
   Stack,
-  Switch,
   Collapse,
   Container,
   Icon,
@@ -30,8 +27,6 @@ import {
   PopoverTrigger,
   PopoverContent,
   Tag,
-  Textarea,
-  VStack,
   useColorModeValue,
   useBreakpointValue,
   useDisclosure,
@@ -43,6 +38,7 @@ import {
   ChevronRightIcon,
 } from '@chakra-ui/icons'
 import { useContext, useEffect, useState, useRef } from 'react'
+import { FaDiscord } from 'react-icons/fa'
 import {
   WalletDisconnectButton,
   WalletMultiButton,
@@ -59,9 +55,7 @@ import {
   ILanding,
   
   userIsActive,
-  userInactiveDate,
   userTrialCutoff,
-  userSubsCutoff,
 } from '../types/user'
 
 
@@ -270,7 +264,7 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
 
     const isTrial = userTrialCutoff( user ) ? Moment().isBefore(userTrialCutoff( user )) : false
     const isActive = userIsActive( user )
-    const inactiveDate = user?.isOG ? "Never" : (userInactiveDate( user )?.format( 'LLL' ) || "Unknown")
+    const inactiveDate = user?.isOG ? "Never" : (Moment(user?.inactiveDate).format( 'LLL' ) || "Unknown")
 
     useEffect(() => {
         setMyUser( user )
@@ -324,31 +318,32 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
                                 <FormLabel htmlFor="verifyCode">Discord Verification Code</FormLabel>
                                 <Text fontSize="x-small" mb="1">
                                   <OrderedList width="full">
-                                    <ListItem>
-                                      Join our {" "}
+                                    <ListItem mb="0.5">
+                                      Join our Discord Server{" "}
                                       <Link href={"https://discord.gg/tZKuYzx9pm"} target="_blank" color="blue" textDecoration="underline">
-                                      Discord Server
+                                        <Icon as={ FaDiscord } w={ 5 } h={ 5 } />
                                       </Link>
                                     </ListItem>
 
-                                    <ListItem>
+                                    <ListItem mb="0.5">
                                       <Text display="table">
-                                        Send a{" "}<Code
+                                        Send a{" "}
+                                        <Code
                                           children="/verify"
                                           fontSize="x-small"
                                           textAlign="center"
+                                          mr="1"
                                         />
                                         DM to{" "}
-                                        <Tag
+                                        <Text
+                                          as="span"
+                                          pl="1"
                                           fontSize="x-small"
-                                          colorScheme="red"
-                                          size="sm"
-                                          variant="solid" 
+                                          fontWeight="bold"
                                           display="table-cell"
-                                          verticalAlign="middle"
                                         >
-                                          Degen Bible Bot
-                                        </Tag>
+                                          {" "}Degen Bible Bot
+                                        </Text>
                                       </Text>
                                     </ListItem>
 
@@ -426,21 +421,21 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
                     }
 
                     { !isVerified &&
-                        <Box marginTop="4">
-                            <Button
-                              bg={ 'blue.400' }
-                              color={ 'white' }
-                              disabled={ !(myUser?.discordName?.length > 0) || verifyCode === undefined }
-                              _hover={ { bg: 'blue.500' } }
-                              onClick={ async () => {
-                                if ( await onCreateUser(myUser, verifyCode) ) {
-                                    setVerifyCode(undefined)
-                                }
-                              }}
-                            >
-                              Create User
-                            </Button>
-                        </Box>
+                      <Box marginTop="4">
+                        <Button
+                          bg={ 'blue.400' }
+                          color={ 'white' }
+                          disabled={ !(myUser?.discordName?.length > 0) || verifyCode === undefined }
+                          _hover={ { bg: 'blue.500' } }
+                          onClick={ async () => {
+                            if ( await onCreateUser(myUser, verifyCode) ) {
+                                setVerifyCode(undefined)
+                            }
+                          }}
+                        >
+                          Create User
+                        </Button>
+                      </Box>
                     }
                     
                     </Stack>

@@ -10,34 +10,23 @@ export interface IUser {
     inactiveDate: string;
     verified: boolean;
     isOG: boolean;
+    trialHours: number;
   }
 
 export const userTrialCutoff = ( user?: IUser ): Moment.Moment | undefined => {
-  return user ? Moment( user.createdAt ).add({ hours: 12 }) : undefined
-}
-
-export const userSubsCutoff = ( user?: IUser ): Moment.Moment | undefined => {
-  return user?.inactiveDate ? Moment( user.inactiveDate ) : undefined
-}
-
-export const userInactiveDate = ( user?: IUser ): Moment.Moment | undefined => {
   if ( !user ) {
-    return undefined
+    return
   }
 
-  return userSubsCutoff( user ) || userTrialCutoff( user )
+  return Moment( user.createdAt ).add({ hours: user.trialHours })
 }
 
 export const userIsActive = ( user?: IUser ): boolean => {
   if ( user?.isOG ) {
     return true
   }
-  const inactiveDate = userInactiveDate( user )
-  if ( !inactiveDate ) {
-    return false
-  }
 
-  return Moment().isBefore( inactiveDate )
+  return Moment().isBefore( Moment( user?.inactiveDate ))
 }
 
 export interface ILandingResp {
