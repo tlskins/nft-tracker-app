@@ -2,7 +2,7 @@ import { toast } from 'react-toastify'
 
 import http, { setSession, clearSession } from '../http-common'
 import { ICreateTransactionReq, ICreateTransactionResp } from '../types/transaction'
-import { IUser, ICreateUserReq, IUserResp, ILanding, ILandingResp } from '../types/user'
+import { IUser, ICreateUserReq, IUserResp, ILanding, ILandingResp, IPricingResp, IPricing } from '../types/user'
 
 class UserService {
   getLanding = async (): Promise<ILanding | undefined> => {
@@ -11,7 +11,7 @@ class UserService {
 
       return landingResp?.data
     } catch( err ) {
-      toast.error( `Error getting landing data: ${err.response?.data || 'Unknown'}`, {
+      toast.error( `Error getting landing data: ${err.response?.data?.message || 'Unknown'}`, {
         position: toast.POSITION.TOP_CENTER,
       })
 
@@ -33,7 +33,7 @@ class UserService {
 
       return userResp?.data?.user
     } catch( err ) {
-      console.log( 'err getting user ', err.response?.data )
+      console.log( 'err getting user ', err.response?.data?.message )
 
       return
     }
@@ -53,6 +53,20 @@ class UserService {
     }
   }
 
+  getPricing = async (): Promise<IPricing | undefined> => {
+    try {
+      const pricingResp: IPricingResp = await http.get( 'subscriptions/pricing' )
+
+      return pricingResp?.data?.pricing
+    } catch( err ) {
+      toast.error( `Error getting pricing data: ${err.response?.data?.message || 'Unknown'}`, {
+        position: toast.POSITION.TOP_CENTER,
+      })
+
+      return
+    }
+  }
+
   createTransaction = async ( req: ICreateTransactionReq ): Promise<IUser | undefined> => {
     try {
       const resp: ICreateTransactionResp = await http.post( '/users/transactions', req )
@@ -63,7 +77,7 @@ class UserService {
 
       return resp.user
     } catch( err ) {
-      toast.error( `Error extending subscription: ${err.response?.data || 'Unknown'}`, {
+      toast.error( `Error extending subscription: ${err.response?.data?.message || 'Unknown'}`, {
         position: toast.POSITION.TOP_CENTER,
       })
 

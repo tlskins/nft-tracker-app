@@ -36,6 +36,21 @@ export interface ILanding {
     collections: Map<string, string>;
   }
 
+export interface IPricingResp {
+    data: IPricingData;
+  }
+
+export interface IPricingData {
+    pricing: IPricing;
+  }
+export interface IPricing {
+  timestamp: string;
+  lamportsPerWeek: number;
+  numActive: number;
+  lamportsPerActive: number;
+  baseLamportsPerWeek: number;
+}
+
 export interface ICreateUserReq {
     walletPublicKey: string;
     discordName: string;

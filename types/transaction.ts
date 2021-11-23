@@ -1,4 +1,4 @@
-import { IUser } from './user'
+import { IPricing, IUser } from './user'
 
 export interface ITransaction {
     id: string;
@@ -14,6 +14,7 @@ export interface ICreateTransactionReq {
     walletPublicKey: string;
     toPublicKey: string;
     amountLamports: number;
+    pricing: IPricing;
   }
 
 export interface ICreateTransactionResp {

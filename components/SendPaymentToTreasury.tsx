@@ -1,35 +1,46 @@
 import { WalletNotConnectedError } from '@solana/wallet-adapter-base'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { SystemProgram, Transaction, PublicKey } from '@solana/web3.js'
-import React, { FC, useCallback, useState, useContext } from 'react'
+import React, { FC, useCallback, useState, useContext, useEffect } from 'react'
 import {
   Box,
-  Container,
   Stack,
   Slider,
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
+  Text,
   Button,
-  FormControl,
   FormLabel,
-  FormHelperText,
 } from '@chakra-ui/react'
 import { toast } from 'react-toastify';
 
 import UserService from '../services/user.service'
 import { globalContext } from '../store'
+import { IPricing } from '../types/user'
 
 
 const LamportsInSol = 1000000000.0
-const defaultSolAmt = 0.2
+const defaultSolAmt = 0.1
 
 const SendPaymentToTreasury: FC = () => {
   const { connection } = useConnection()
   const { publicKey, sendTransaction } = useWallet()
   const [ solAmount, setSolAmount ] = useState( defaultSolAmt )
+  const [ pricing, setPricing ] = useState( undefined as IPricing | undefined)
   const { globalState, dispatch } = useContext( globalContext )
   const { user } = globalState
+
+  useEffect(() => {
+    syncPricing()
+  }, [])
+
+  const syncPricing = async (): Promise<void> => {
+    const pricing = await UserService.getPricing()
+    if ( pricing ) {
+      setPricing( pricing )
+    }
+  }
 
   const onClick = useCallback( (amount: number) => async () => {
     if ( !publicKey ) {throw new WalletNotConnectedError()}
@@ -67,7 +78,8 @@ const SendPaymentToTreasury: FC = () => {
     const updatedUser = await UserService.createTransaction({
       walletPublicKey: publicKey.toString(),
       toPublicKey: treasuryKey.toString(),
-      amountLamports
+      amountLamports,
+      pricing,
     })
     if ( updatedUser ) {
       dispatch({ type: 'SET_USER', payload: updatedUser })
@@ -75,11 +87,19 @@ const SendPaymentToTreasury: FC = () => {
     }
   }, [ publicKey, sendTransaction, connection ])
 
-  const extendedDays = `(${ ( solAmount * 7 * 5 ).toFixed( 1 ) } days)`
+  const wkLampsCost = pricing ? pricing.baseLamportsPerWeek + (pricing.numActive * pricing.lamportsPerActive) : 0.0
+  const dailyLampsCost = pricing ? wkLampsCost / 7.0 : 0.0
+  const extendedDays = `(${ ( solAmount * LamportsInSol / dailyLampsCost).toFixed( 1 ) } days)`
 
   return (
       <Box>
         <FormLabel htmlFor="paybtn">Extend Subscription { extendedDays }</FormLabel>
+        <Text fontSize="sm" pl="1">
+          Current price per week { (wkLampsCost / LamportsInSol).toFixed( 4 ) } SOL
+        </Text>
+        <Text fontSize="sm" pl="1">
+          Active users { pricing?.numActive || "?" }
+        </Text>
         <Box paddingX="4"
           paddingY="2"
           align="center"
@@ -88,8 +108,8 @@ const SendPaymentToTreasury: FC = () => {
         >
           <Slider
             defaultValue={ defaultSolAmt }
-            min={ 0.2 }
-            max={ 5 }
+            min={ 0.1 }
+            max={ 10 }
             step={ 0.1 }
             onChange={ amt => setSolAmount( amt ) }
           >

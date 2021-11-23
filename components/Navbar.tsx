@@ -53,7 +53,6 @@ import UserService from '../services/user.service'
 import {
   IUser,
   ILanding,
-  
   userIsActive,
   userTrialCutoff,
 } from '../types/user'
