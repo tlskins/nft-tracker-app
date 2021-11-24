@@ -89,6 +89,7 @@ const SendPaymentToTreasury: FC = () => {
       toast.error(`Error processing transaction in the Solana network: ${err}`, {
         position: toast.POSITION.TOP_CENTER
       })
+      return
     }
 
     // update global store
