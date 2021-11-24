@@ -18,6 +18,10 @@ export interface ICreateTransactionReq {
   }
 
 export interface ICreateTransactionResp {
-    transaction: ITransaction;
-    user: IUser;
+    data: ICreateTransactionData;
   }
+
+export interface ICreateTransactionData {
+  transaction: ITransaction;
+  user: IUser;
+}
