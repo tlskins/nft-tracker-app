@@ -27,6 +27,7 @@ const SendPaymentToTreasury: FC = () => {
   const { publicKey, sendTransaction } = useWallet()
   const [ solAmount, setSolAmount ] = useState( 0.0 )
   const [ pricing, setPricing ] = useState( undefined as IPricing | undefined)
+  const [ isSubmitting, setIsSubmitting ] = useState( false )
   const { globalState, dispatch } = useContext( globalContext )
   const { user } = globalState
 
@@ -67,6 +68,8 @@ const SendPaymentToTreasury: FC = () => {
 
     console.log('transaction', treasuryKey, amount, amountLamports, pricing)
 
+    setIsSubmitting( true )
+
     try {
       // send transaction
       const transaction = new Transaction().add(
@@ -82,6 +85,7 @@ const SendPaymentToTreasury: FC = () => {
       const sigResult = await connection.confirmTransaction( signature, 'processed' )
       console.log( 'sigRes', sigResult )
       if ( !sigResult?.value || sigResult.value.err !== null ) {
+        setIsSubmitting( false )
         throw(new Error(sigResult?.value?.err?.toString() || "Unknown"))
       }
     } catch( err ) {
@@ -89,20 +93,26 @@ const SendPaymentToTreasury: FC = () => {
       toast.error(`Error processing transaction in the Solana network: ${err}`, {
         position: toast.POSITION.TOP_CENTER
       })
+      setIsSubmitting( false )
       return
     }
 
-    // update global store
+    // extend subscription
     const updatedUser = await UserService.createTransaction({
       walletPublicKey: publicKey.toString(),
       toPublicKey: treasuryKey.toString(),
       amountLamports,
       pricing,
     })
+
+    console.log('updatedUser', updatedUser)
+  
+    // update global state
     if ( updatedUser ) {
       dispatch({ type: 'SET_USER', payload: updatedUser })
       setSolAmount(wkSolCost)
     }
+    setIsSubmitting( false )
   }, [ publicKey, sendTransaction, connection ])
 
   return (
@@ -141,7 +151,7 @@ const SendPaymentToTreasury: FC = () => {
         <Stack alignContent="center" alignItems="center">
           <Button
             id="paybtn"
-            isLoading={ false }
+            isLoading={ isSubmitting }
             disabled={ !user || !publicKey }
             loadingText="Submitting"
             colorScheme="blue"
