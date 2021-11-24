@@ -77,7 +77,7 @@ class UserService {
 
       return resp.user
     } catch( err ) {
-      toast.error( `Error extending subscription: ${err.response?.data?.message || 'Unknown'}`, {
+      toast.error( `Please contact discord server owner. Error extending subscription: ${err.response?.data?.message || 'Unknown'}`, {
         position: toast.POSITION.TOP_CENTER,
       })
 

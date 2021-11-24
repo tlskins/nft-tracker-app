@@ -52,13 +52,20 @@ const SendPaymentToTreasury: FC = () => {
     }
   }
 
-  const onClick = useCallback( (amount: number) => async () => {
+  const onClick = useCallback( (amount: number, pricing: IPricing) => async () => {
     if ( !publicKey ) {throw new WalletNotConnectedError()}
     const treasuryAddress = process.env.NEXT_PUBLIC_TREASURY_ADDRESS
     const treasuryKey = new PublicKey( treasuryAddress )
     const amountLamports = LamportsInSol * amount
 
-    console.log('transaction', treasuryKey, amount, amountLamports)
+    if (!pricing) {
+      toast.error( "Pricing data is invalid. Please refresh your browser.", {
+        position: toast.POSITION.TOP_CENTER,
+      })
+      return
+    }
+
+    console.log('transaction', treasuryKey, amount, amountLamports, pricing)
 
     try {
       // send transaction
@@ -140,7 +147,7 @@ const SendPaymentToTreasury: FC = () => {
             size="sm"
             fontSize="xs"
             textTransform="uppercase"
-            onClick={ onClick( solAmount ) }
+            onClick={ onClick( solAmount, pricing ) }
           >
             Submit { solAmount } SOL
           </Button>
