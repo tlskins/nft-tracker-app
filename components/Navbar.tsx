@@ -281,16 +281,16 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
                 <DrawerContent>
                 <DrawerCloseButton />
                 <DrawerHeader borderBottomWidth="1px">
-                    <Box>
-                        <FormLabel htmlFor="wallet">Wallet</FormLabel>
-                        <Input
-                            id="wallet"
-                            value={ myUser?.walletPublicKey }
-                            disabled={true}
-                            backgroundColor="gray.300"
-                            fontSize="sm"
-                        />
-                    </Box>
+                  <Box>
+                    <FormLabel htmlFor="wallet">Wallet</FormLabel>
+                    <Input
+                        id="wallet"
+                        value={ myUser?.walletPublicKey }
+                        disabled={true}
+                        backgroundColor="gray.300"
+                        fontSize="sm"
+                    />
+                  </Box>
                 </DrawerHeader>
 
                 <DrawerBody>

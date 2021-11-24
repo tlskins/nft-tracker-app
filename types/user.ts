@@ -10,7 +10,7 @@ export interface IUser {
     inactiveDate: string;
     verified: boolean;
     isOG: boolean;
-    trialHours: number;
+    trialEnd: string;
   }
 
 export const userTrialCutoff = ( user?: IUser ): Moment.Moment | undefined => {
@@ -18,7 +18,7 @@ export const userTrialCutoff = ( user?: IUser ): Moment.Moment | undefined => {
     return
   }
 
-  return Moment( user.createdAt ).add({ hours: user.trialHours })
+  return Moment( user.trialEnd )
 }
 
 export const userIsActive = ( user?: IUser ): boolean => {

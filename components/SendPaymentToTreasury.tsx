@@ -21,19 +21,29 @@ import { IPricing } from '../types/user'
 
 
 const LamportsInSol = 1000000000.0
-const defaultSolAmt = 0.1
 
 const SendPaymentToTreasury: FC = () => {
   const { connection } = useConnection()
   const { publicKey, sendTransaction } = useWallet()
-  const [ solAmount, setSolAmount ] = useState( defaultSolAmt )
+  const [ solAmount, setSolAmount ] = useState( 0.0 )
   const [ pricing, setPricing ] = useState( undefined as IPricing | undefined)
   const { globalState, dispatch } = useContext( globalContext )
   const { user } = globalState
 
+  const wkLampsCost = pricing ? pricing.baseLamportsPerWeek + (pricing.numActive * pricing.lamportsPerActive) : 0.0
+  const wkSolCost = wkLampsCost / LamportsInSol
+  const dailyLampsCost = pricing ? wkLampsCost / 7.0 : 0.0
+  const extendedDays = `(${ ( solAmount * LamportsInSol / dailyLampsCost).toFixed( 1 ) } days)`
+
   useEffect(() => {
     syncPricing()
   }, [])
+
+  useEffect(() => {
+    if ( solAmount === 0.0 ) {
+      setSolAmount( wkSolCost )
+    }
+  }, [pricing])
 
   const syncPricing = async (): Promise<void> => {
     const pricing = await UserService.getPricing()
@@ -83,22 +93,21 @@ const SendPaymentToTreasury: FC = () => {
     })
     if ( updatedUser ) {
       dispatch({ type: 'SET_USER', payload: updatedUser })
-      setSolAmount(defaultSolAmt)
+      setSolAmount(wkSolCost)
     }
   }, [ publicKey, sendTransaction, connection ])
-
-  const wkLampsCost = pricing ? pricing.baseLamportsPerWeek + (pricing.numActive * pricing.lamportsPerActive) : 0.0
-  const dailyLampsCost = pricing ? wkLampsCost / 7.0 : 0.0
-  const extendedDays = `(${ ( solAmount * LamportsInSol / dailyLampsCost).toFixed( 1 ) } days)`
 
   return (
       <Box>
         <FormLabel htmlFor="paybtn">Extend Subscription { extendedDays }</FormLabel>
         <Text fontSize="sm" pl="1">
-          Current price per week { (wkLampsCost / LamportsInSol).toFixed( 4 ) } SOL
+          Active users { pricing?.numActive || "?" }
         </Text>
         <Text fontSize="sm" pl="1">
-          Active users { pricing?.numActive || "?" }
+          Fee per user { (pricing?.lamportsPerActive || 0) / LamportsInSol }
+        </Text>
+        <Text fontSize="sm" pl="1">
+          Current price per week { wkSolCost.toFixed( 4 ) } SOL
         </Text>
         <Box paddingX="4"
           paddingY="2"
@@ -107,8 +116,8 @@ const SendPaymentToTreasury: FC = () => {
           mb="4"
         >
           <Slider
-            defaultValue={ defaultSolAmt }
-            min={ 0.1 }
+            defaultValue={ 0.0 }
+            min={ wkSolCost }
             max={ 10 }
             step={ 0.1 }
             onChange={ amt => setSolAmount( amt ) }
