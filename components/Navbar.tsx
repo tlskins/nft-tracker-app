@@ -319,7 +319,7 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
                                   <OrderedList width="full">
                                     <ListItem mb="0.5">
                                       Join our Discord Server{" "}
-                                      <Link href={"https://discord.gg/tZKuYzx9pm"} target="_blank" color="blue" textDecoration="underline">
+                                      <Link href={"https://discord.gg/fJQ7H4UDMX"} target="_blank" color="blue" textDecoration="underline">
                                         <Icon as={ FaDiscord } w={ 5 } h={ 5 } />
                                       </Link>
                                     </ListItem>
