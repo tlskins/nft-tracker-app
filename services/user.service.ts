@@ -2,10 +2,19 @@ import { toast } from 'react-toastify'
 
 import http, { setSession, clearSession } from '../http-common'
 import { ICreateTransactionReq, ICreateTransactionResp } from '../types/transaction'
-import { IUser, ICreateUserReq, IUserResp, ILanding, ILandingResp, IPricingResp, IPricing } from '../types/user'
+import {
+  IUser,
+  IUpdateUserProfile,
+  ICreateUserReq,
+  IUserResp,
+  ILanding,
+  ILandingResp,
+  IPricingResp,
+  IPricing,
+} from '../types/user'
 
 class UserService {
-  getLanding = async (): Promise<ILanding | undefined> => {
+  getLanding = async (): Promise<Map<string, string> | undefined> => {
     try {
       const landingResp: ILandingResp = await http.get( 'landing' )
 
@@ -34,6 +43,18 @@ class UserService {
       return userResp?.data?.user
     } catch( err ) {
       console.log( 'err getting user ', err.response?.data?.message )
+
+      return
+    }
+  }
+
+  update = async ( update: IUpdateUserProfile ): Promise<IUser | undefined> => {
+    try {
+      const userResp: IUserResp = await http.put( 'users', update )
+
+      return userResp?.data?.user
+    } catch( err ) {
+      console.log( 'err updating user ', err.response?.data?.message )
 
       return
     }

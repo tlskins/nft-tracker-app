@@ -1,5 +1,7 @@
 import Moment from 'moment'
 
+import { Nft } from './tokens'
+
 export interface IUser {
     id: string;
     createdAt: string;
@@ -11,6 +13,10 @@ export interface IUser {
     verified: boolean;
     isOG: boolean;
     trialEnd: string;
+
+    trackedWallets: [string];
+    untrackedNfts: [Nft];
+    hasWalletTracker: boolean;
   }
 
 export const userTrialCutoff = ( user?: IUser ): Moment.Moment | undefined => {
@@ -69,3 +75,9 @@ export interface IUserResp {
 export interface IUserData {
     user: IUser | undefined
   }
+
+
+export interface IUpdateUserProfile {
+  trackedWallets?: [string];
+  hasWalletTracker?: boolean;
+}

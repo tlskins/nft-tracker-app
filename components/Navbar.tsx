@@ -626,5 +626,9 @@ const getNavItems = (landing: ILanding): Array<NavItem> =>  {
         })
       }),
     },
+    {
+      label: 'Wallet Manager',
+      href: '/wallet',
+    },
   ]
 }
