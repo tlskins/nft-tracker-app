@@ -78,6 +78,6 @@ export interface IUserData {
 
 
 export interface IUpdateUserProfile {
-  trackedWallets?: [string];
+  trackedWallets?: string[];
   hasWalletTracker?: boolean;
 }
