@@ -41,53 +41,110 @@ import UnauthorizedHero from '../../components/UnauthorizedHero'
 import { globalContext } from '../../store'
 import WalletService from '../../services/wallet.service'
 import userService from '../../services/user.service'
+import walletService from '../../services/wallet.service'
 
 
 export default function WalletManager() {
   const { globalState: { user }, dispatch } = useContext( globalContext )
+
+  // mgmt
   const [ walletLoaded, setWalletLoaded ] = useState( false )
-  const [ tokTrackers, setTokTrackers ] = useState(new Map() as Map<string, ITokenTracker[]>)
-  const [ untrackedNfts, setUntrackedNfts ] = useState([] as Nft[])
   const [ trackerTypes, setTrackerTypes ] = useState([] as string[])
-  const [ collections, setCollections ] = useState([] as string[])
   const [ trackersSaving, setTrackersSaving ] = useState(new Map() as Map<string, boolean>)
   const [ newWalletAddr, setNewWalletAddr ] = useState("")
+  const [ isSyncWallet, setIsSyncWallet ] = useState(false)
+
+  // trackers
+  const [ allTrackers, setAllTrackers ] = useState([] as ITokenTracker[])
+  const [ tokTrksMap, setTokTrackers ] = useState(new Map() as Map<string, ITokenTracker[]>)
+  const [ untrackedNfts, setUntrackedNfts ] = useState([] as Nft[])
+  const [ collections, setCollections ] = useState([] as string[])
+  const [ selCollection, setSelCollection ] = useState("")
+  const selTrackers = tokTrksMap.get(selCollection) || []
+  const selFloorSum = selTrackers.reduce((sum, trk) => {
+    sum += trk.token?.floorPrice || 0.0
+    return sum
+  }, 0.0)
+  const sellSuggSum = selTrackers.reduce((sum, trk) => {
+    sum += trk.token?.suggestedPrice || 0.0
+    return sum
+  }, 0.0)
+
+  // portfolio
+  const [ selWallet, setSelWallet ] = useState("")
+  const [ ttlTracked, setTtlTracked ] = useState(0)
+  const [ ttlUntracked, setTtlUntracked ] = useState(0)
+  const [ ttlFloor, setTtlFloor ] = useState(0)
+  const [ ttlSugg, setTtlSugg ] = useState(0)
+  const [ mostVal, setMostVal ] = useState(undefined as ITokenTracker | undefined)
 
   useEffect(() => {
     if ( !walletLoaded && user ) {
-        loadWallet()
+        getWallet()
+    }
+    if ( user && user.trackedWallets?.length > 0 ) {
+        setSelWallet(user.trackedWallets[0])
     }
   }, [ user ])
 
-  const loadWallet = async (): Promise<void> => {
+  useEffect(() => {
+    const walletTrks = allTrackers.filter( trk => trk.walletAddress === selWallet )
+    let mostVal = undefined as ITokenTracker | undefined
+    walletTrks.forEach( trk => {
+        if ( mostVal === undefined || trk.token?.suggestedPrice > mostVal.token?.suggestedPrice ) {
+            mostVal = trk
+        }
+    })
+    setMostVal( mostVal )
+    setTtlFloor( walletTrks.reduce((sum, trk) => {
+        sum += trk.token?.floorPrice || 0.0
+        return sum
+    }, 0.0) )
+    setTtlSugg( walletTrks.reduce((sum, trk) => {
+        sum += trk.token?.suggestedPrice || 0.0
+        return sum
+    }, 0.0) )
+    setTtlTracked( walletTrks.length )
+    setTtlUntracked( untrackedNfts.filter( nft => nft.walletAddress === selWallet ).length )
+  }, [ selWallet, allTrackers ])
+
+  const getWallet = async (): Promise<void> => {
     const walletResp = await WalletService.getWallet()
     if ( walletResp ) {
-        const collections = []
-        const tokTrackers = new Map<string, ITokenTracker[]>();
-        walletResp.tracked.forEach( tracker => {
-            const coll = tracker.token?.collection
-            if ( coll ) {
-                if ( !tokTrackers.get(coll) ) {
-                    tokTrackers.set(coll, [])
-                    collections.push(coll)
-                }
-                const updTrackers = tokTrackers.get(coll)
-                tokTrackers.set(coll, [...updTrackers, tracker])
-            }
-        })
-
-        setCollections(collections)
-        setTokTrackers( tokTrackers )
-        setUntrackedNfts( walletResp.untracked )
+        loadWallet( walletResp.tracked, walletResp.untracked )
         setTrackerTypes( walletResp.tokenTrackingTypes )
-        setWalletLoaded(true)
     }
   }
 
+  const loadWallet = (tracked: ITokenTracker[], untracked: Nft[]) => {
+    const allTrackers = [] as ITokenTracker[]
+    const collections = []
+    const tokTrksMap = new Map<string, ITokenTracker[]>();
+    tracked.forEach( tracker => {
+        const coll = tracker.token?.collection
+        if ( coll ) {
+            if ( !tokTrksMap.get(coll) ) {
+                tokTrksMap.set(coll, [])
+                collections.push(coll)
+            }
+            const updTrackers = tokTrksMap.get(coll)
+            tokTrksMap.set(coll, [...updTrackers, tracker])
+            allTrackers.push(tracker)
+        }
+    })
+
+    setAllTrackers( allTrackers )
+    setCollections( collections )
+    setSelCollection( collections.length > 0 ? collections[0] : "" )
+    setTokTrackers( tokTrksMap )
+    setUntrackedNfts( untracked )
+    setWalletLoaded( true )
+  }
+
   const updateTracker = (coll: string, tracker: ITokenTracker) => {
-    const trackers = tokTrackers.get(coll)
+    const trackers = tokTrksMap.get(coll)
     const idx = trackers.findIndex( trk => trk.id === tracker.id )
-    const newTrks = new Map(tokTrackers.set(coll, [
+    const newTrks = new Map(tokTrksMap.set(coll, [
         ...trackers.slice(0, idx),
         {...tracker},
         ...trackers.slice(idx+1, trackers.length)
@@ -136,9 +193,9 @@ export default function WalletManager() {
 
     setTrackersSaving(new Map(trackersSaving.set(tracker.id, true)))
     const updTracker = await WalletService.saveTokenTracker(update)
-    const trackers = tokTrackers.get(coll)
+    const trackers = tokTrksMap.get(coll)
     const idx = trackers.findIndex( trk => trk.id === tracker.id )
-    const newTrks = new Map(tokTrackers.set(coll, [
+    const newTrks = new Map(tokTrksMap.set(coll, [
         ...trackers.slice(0, idx),
         updTracker,
         ...trackers.slice(idx+1, trackers.length)
@@ -147,7 +204,7 @@ export default function WalletManager() {
     setTrackersSaving(new Map(trackersSaving.set(tracker.id, false)))
   }
 
-  console.log('tokTrackers', tokTrackers)
+  console.log('tokTrksMap', tokTrksMap)
 
   return (
     <Box>
@@ -157,22 +214,10 @@ export default function WalletManager() {
         }
       </Box>
 
-      { walletLoaded && collections.map((coll, i) => {
-          const trackers = tokTrackers.get(coll)
-          const sumFloor = trackers.reduce((sum, trk) => {
-              sum += trk.token?.floorPrice || 0.0
-              return sum
-          }, 0.0)
-          const sumSugg = trackers.reduce((sum, trk) => {
-            sum += trk.token?.suggestedPrice || 0.0
-            return sum
-          }, 0.0)
-
-          return(
-            <Box p={4} key={i}>
-
-                {/* Wallet Portfolio */}
+      { walletLoaded && 
+            <Box p={4}>
                 <Flex direction="row" justify={'center'}>
+                    {/* Wallets Manager */}
                     <Flex
                         align={'center'}
                         justify={'center'}
@@ -232,7 +277,7 @@ export default function WalletManager() {
                                             setNewWalletAddr("")
                                             dispatch({ type: 'SET_USER', payload: user })
                                             toast.success("Wallets Updated", {
-                                            position: toast.POSITION.TOP_CENTER
+                                                position: toast.POSITION.TOP_CENTER
                                             })
                                         }
                                     }}
@@ -244,65 +289,45 @@ export default function WalletManager() {
                             <Stack spacingX={4} direction="column" w={'full'}>
                                 { user.trackedWallets.map( wallet => (
                                     <Box
-                                        bg={useColorModeValue('gray.100', 'gray.600')}
                                         rounded={'full'}
                                         border={0}
                                         py="2"
                                         px="4"
                                         fontSize="sm"
-                                        textColor={useColorModeValue('gray.500', 'gray.200')}
+                                        cursor="pointer"
+                                        bg={ selWallet === wallet ? 'blue.600' : useColorModeValue('gray.100', 'gray.600')}
+                                        textColor={ selWallet === wallet ? 'white' : useColorModeValue('gray.500', 'gray.200')}
+                                        _hover={{ bg: 'blue.500', color: 'white' }}
+                                        _focus={{ bg: 'blue.500', color: 'white' }}
+                                        onClick={() => setSelWallet(wallet)}
                                     >
                                         { wallet }
                                     </Box>
                                 ))}
                             </Stack>
-                        </Stack>
-                    </Flex>
 
-                    <Flex
-                        align={'center'}
-                        justify={'center'}
-                        py={12}
-                        bg={useColorModeValue('gray.50', 'gray.800')}
-                    >
-                        <Stack
-                            boxShadow={'2xl'}
-                            bg={useColorModeValue('white', 'gray.700')}
-                            rounded={'xl'}
-                            p={10}
-                            spacing={8}
-                            align={'center'}
-                        >
-                            <Icon as={NotificationIcon} w={24} h={24} />
-                            <Stack align={'center'} spacing={2}>
-                                <Heading
-                                    textTransform={'uppercase'}
-                                    fontSize={'3xl'}
-                                    color={useColorModeValue('gray.800', 'gray.200')}
-                                >
-                                    Wallet Tracker
-                                </Heading>
-                                <Text fontSize={'lg'} color={'gray.500'}>
-                                    Alerts when your portfolio changes!
-                                </Text>
-                            </Stack>
-
-                            <Stack spacing={4} direction={{ base: 'column', md: 'row' }} w={'full'}>
-                                <Input
-                                    type={'text'}
-                                    placeholder={'wallet address'}
-                                    color={useColorModeValue('gray.800', 'gray.200')}
-                                    bg={useColorModeValue('gray.100', 'gray.600')}
-                                    rounded={'full'}
-                                    border={0}
-                                    _focus={{
-                                        bg: useColorModeValue('gray.200', 'gray.800'),
-                                        outline: 'none',
-                                    }}
-                                    onChange={ e => setNewWalletAddr(e.target.value) }
-                                    value={ newWalletAddr }
-                                    fontSize="sm"
-                                />
+                            <Stack direction="row">
+                                { user.trackedWallets.length > 0 &&
+                                    <Button
+                                        bg={'blue.400'}
+                                        rounded={'full'}
+                                        color={'white'}
+                                        flex={'1 0 auto'}
+                                        isLoading={ isSyncWallet }
+                                        _hover={{ bg: 'blue.500' }}
+                                        _focus={{ bg: 'blue.500' }}
+                                        onClick={async () => {
+                                            setIsSyncWallet( true )
+                                            const resp = await walletService.syncWallet()
+                                            if ( resp ) {
+                                                loadWallet( resp.tracked, resp.untracked )
+                                            }
+                                            setIsSyncWallet( false )
+                                        }}
+                                    >
+                                        Sync Wallets
+                                    </Button>
+                                }
                                 <Button
                                     bg={'blue.400'}
                                     rounded={'full'}
@@ -310,39 +335,108 @@ export default function WalletManager() {
                                     flex={'1 0 auto'}
                                     _hover={{ bg: 'blue.500' }}
                                     _focus={{ bg: 'blue.500' }}
-                                    onClick={ async () => {
-                                        const trackedWallets = [...user.trackedWallets, newWalletAddr]
-                                        if ( trackedWallets ) {
-                                            const user = await userService.update({ trackedWallets })
-                                            setNewWalletAddr("")
-                                            dispatch({ type: 'SET_USER', payload: user })
-                                            toast.success("Wallets Updated", {
-                                            position: toast.POSITION.TOP_CENTER
-                                            })
-                                        }
-                                    }}
                                 >
-                                    Track
+                                    Save Changes
                                 </Button>
-                            </Stack>
-
-                            <Stack spacingX={4} direction="column" w={'full'}>
-                                { user.trackedWallets.map( wallet => (
-                                    <Box
-                                        bg={useColorModeValue('gray.100', 'gray.600')}
-                                        rounded={'full'}
-                                        border={0}
-                                        py="2"
-                                        px="4"
-                                        fontSize="sm"
-                                        textColor={useColorModeValue('gray.500', 'gray.200')}
-                                    >
-                                        { wallet }
-                                    </Box>
-                                ))}
                             </Stack>
                         </Stack>
                     </Flex>
+
+                    {/* Wallet Portfolio */}
+                    { selWallet !== "" &&
+                        <Flex
+                            align={'center'}
+                            justify={'center'}
+                            py={12}
+                            bg={useColorModeValue('gray.50', 'gray.800')}
+                        >
+                            <Stack
+                                height="full"
+                                boxShadow={'2xl'}
+                                bg={useColorModeValue('white', 'gray.700')}
+                                rounded={'xl'}
+                                p={10}
+                                spacing={8}
+                                align={'center'}
+                                alignContent="center"
+                                verticalAlign="center"
+                            >
+                                <Box alignSelf="center">
+                                    <Stack align={'center'} spacing={2} mb="4">
+                                        <Heading
+                                            textTransform={'uppercase'}
+                                            fontSize={'3xl'}
+                                            color={useColorModeValue('gray.800', 'gray.200')}
+                                        >
+                                            Portfolio
+                                        </Heading>
+                                        <Text fontSize={'lg'} color={'gray.500'}>
+                                            { selWallet.slice(0,6) }...{ selWallet.slice(-6) }
+                                        </Text>
+                                        <Button
+                                            size="xs"
+                                            bg={'orange.400'}
+                                            rounded={'full'}
+                                            color={'white'}
+                                            flex={'1 0 auto'}
+                                            _hover={{ bg: 'red.500' }}
+                                            _focus={{ bg: 'red.500' }}
+                                        >
+                                            Untrack Wallet
+                                        </Button>
+                                    </Stack>
+
+                                    <SimpleGrid
+                                        columns={2}
+                                        spacingX='8'
+                                        px='2'
+                                        fontWeight={500}
+                                        fontSize="sm"
+                                    >
+                                        <Text>Total Tracked</Text>
+                                        <Text>{ ttlTracked }</Text>
+                                        <Text>Total Untracked</Text>
+                                        <Text>{ ttlUntracked }</Text>
+                                        <Text>Total Portfolio @ Suggested</Text>
+                                        <Text>{ ttlSugg.toFixed( 2 ) } SOL</Text>
+                                        <Text>Total Portfolio @ Floor</Text>
+                                        <Text>{ ttlFloor.toFixed( 2 ) } SOL</Text>
+                                    </SimpleGrid>
+
+                                    { mostVal &&
+                                        <Stack
+                                            direction="row"
+                                            mt="4"
+                                            p="2"
+                                            borderRadius="md"
+                                            boxShadow="md"
+                                        >
+                                            <Image
+                                                src={ mostVal.token?.image }
+                                                alt={ `Picture of ${mostVal.token?.title}` }
+                                                rounded="lg"
+                                                w="60"
+                                            />
+                                            <Box fontWeight={300} fontSize="sm" py="4">
+                                                <Text fontWeight={600}>
+                                                    Wallet MVP
+                                                </Text>
+                                                <Text>
+                                                    {mostVal.token?.title}
+                                                </Text>
+                                                <Text>
+                                                    Suggested Price {mostVal.token?.suggestedPrice?.toFixed( 2 ) || "?"} SOL
+                                                </Text>
+                                                <Text>
+                                                    Floor Price {mostVal.token?.floorPrice?.toFixed( 2 ) || "?"} SOL
+                                                </Text>
+                                            </Box>
+                                        </Stack>
+                                    }
+                                </Box>
+                            </Stack>
+                        </Flex>
+                    }
                 </Flex>
 
                 {/* Collection Summary */}
@@ -357,11 +451,34 @@ export default function WalletManager() {
                         justify={'center'}
                         px={4}
                         py={4}
-                        bgGradient={'linear(to-r, navy, transparent)'}
+                        bgGradient={'linear(to-r, blue.500, transparent)'}
                     >
-                        <Heading fontSize="lg" color="white" textDecoration="underline">
+                        {/* <Heading fontSize="lg" color="white" textDecoration="underline">
                             { coll }
-                        </Heading>
+                        </Heading> */}
+
+                        <Menu>
+                            <MenuButton as={Button}
+                                rightIcon={<AiOutlineDown />}
+                                fontSize="sm"
+                                mb="4"
+                            >
+                                { selCollection }
+                            </MenuButton>
+                            <MenuList>
+                                { collections.map( coll => {
+                                    return(
+                                        <MenuItem key={coll}
+                                            fontSize="sm"
+                                            onClick={() => setSelCollection(coll)}
+                                        >
+                                            { coll }
+                                        </MenuItem>
+                                    )
+                                })}
+                            </MenuList>
+                        </Menu>
+
                         <SimpleGrid
                             columns={2}
                             spacingX='8'
@@ -371,228 +488,229 @@ export default function WalletManager() {
                             color="white"
                         >
                             <Text>Count</Text>
-                            <Text>{trackers.length}</Text>
+                            <Text>{selTrackers.length}</Text>
                             <Text>Total Value @ Floor</Text>
-                            <Text>{ sumFloor.toFixed( 2 ) } SOL</Text>
+                            <Text>{ selFloorSum.toFixed( 2 ) } SOL</Text>
                             <Text>Total Value @ Suggested Price</Text>
-                            <Text>{ sumSugg.toFixed( 2 ) } SOL</Text>
+                            <Text>{ sellSuggSum.toFixed( 2 ) } SOL</Text>
                         </SimpleGrid>
                     </VStack>
                 </Flex>
 
                 {/* Collection Tokens  */}
                 <SimpleGrid columns={3} spacing={7}>
-                { trackers.slice(0,3).map((tracker, j) => {
-                    return(
-                        <Stack key={j}
-                            borderRadius="md"
-                            boxShadow="md"
-                            p="2"
-                            direction="row"
-                        >
-                            <Box>
-                                <Image
-                                    src={ tracker.token?.image }
-                                    alt={ `Picture of ${tracker.token?.title}` }
-                                    rounded="lg"
-                                    w="60"
-                                />
-                                <Text fontWeight={600}>{tracker.token?.title}</Text>
-                            </Box>
+                    { selTrackers.filter( trk => trk.token?.collection === selCollection)
+                        .sort((a, b) => b.token?.suggestedPrice - a.token?.suggestedPrice )
+                        .map((tracker, j) => {
+                            return(
+                                <Stack key={j}
+                                    borderRadius="md"
+                                    boxShadow="md"
+                                    p="2"
+                                    direction="row"
+                                >
+                                    <Box>
+                                        <Image
+                                            src={ tracker.token?.image }
+                                            alt={ `Picture of ${tracker.token?.title}` }
+                                            rounded="lg"
+                                            w="60"
+                                        />
+                                        <Text fontWeight={600}>{tracker.token?.title}</Text>
+                                    </Box>
 
-                            <Stack>
-                                <Flex>
-                                    <SimpleGrid
-                                        columns={2}
-                                        spacingX='8'
-                                        px='2'
-                                        fontWeight={500}
-                                        fontSize="sm"
-                                        mb="4"
-                                    >
-                                        <Text>Suggested Price</Text>
-                                        <Text>{tracker.token?.suggestedPrice?.toFixed(2) || "?"} SOL</Text>
-                                        <Text>Floor Price</Text>
-                                        <Text>{tracker.token?.floorPrice?.toFixed(2) || "?"} SOL</Text>
-                                        <Text> Rank </Text>
-                                        <Text> #{tracker.token?.rank || "?"} </Text>
-                                        <Text>Wallet</Text>
-                                        <Text>{ tracker.walletAddress.slice(0,6) }...</Text>
-                                    </SimpleGrid>
-                                </Flex>
-
-                                <Box px='2'>
-                                    <Stack direction="row">
-                                        <Box alignItems="end">
-                                            <FormLabel htmlFor='alertActive' mb='0' fontWeight={500} fontSize="sm">
-                                                { tracker.active ? "Active" : "Inactive" }
-                                            </FormLabel>
-                                            <Switch
-                                                id="alertActive"
-                                                isChecked={tracker.active}
-                                                onChange={e => updateTracker(
-                                                    tracker.token?.collection,
-                                                    { ...tracker, active: e.target.checked},
-                                                )}
-                                            />
-                                        </Box>
-
-                                        <Menu>
-                                            <MenuButton as={Button}
-                                                rightIcon={<AiOutlineDown />}
+                                    <Stack>
+                                        <Flex>
+                                            <SimpleGrid
+                                                columns={2}
+                                                spacingX='8'
+                                                px='2'
+                                                fontWeight={500}
                                                 fontSize="sm"
+                                                mb="4"
                                             >
-                                                { tracker.tokenTrackerType || "Tracker Type" }
-                                            </MenuButton>
-                                            <MenuList>
-                                                { trackerTypes.map( tokenTrackerType => {
-                                                    return(
-                                                        <MenuItem key={tokenTrackerType}
-                                                            fontSize="sm"
+                                                <Text>Suggested Price</Text>
+                                                <Text>{tracker.token?.suggestedPrice?.toFixed(2) || "?"} SOL</Text>
+                                                <Text>Floor Price</Text>
+                                                <Text>{tracker.token?.floorPrice?.toFixed(2) || "?"} SOL</Text>
+                                                <Text> Rank </Text>
+                                                <Text> #{tracker.token?.rank || "?"} </Text>
+                                                <Text>Wallet</Text>
+                                                <Text>{ tracker.walletAddress.slice(0,6) }...</Text>
+                                            </SimpleGrid>
+                                        </Flex>
+
+                                        <Box px='2'>
+                                            <Stack direction="row">
+                                                <Box alignItems="end">
+                                                    <FormLabel htmlFor='alertActive' mb='0' fontWeight={500} fontSize="sm">
+                                                        { tracker.active ? "Active" : "Inactive" }
+                                                    </FormLabel>
+                                                    <Switch
+                                                        id="alertActive"
+                                                        isChecked={tracker.active}
+                                                        onChange={e => updateTracker(
+                                                            tracker.token?.collection,
+                                                            { ...tracker, active: e.target.checked},
+                                                        )}
+                                                    />
+                                                </Box>
+
+                                                <Menu>
+                                                    <MenuButton as={Button}
+                                                        rightIcon={<AiOutlineDown />}
+                                                        fontSize="sm"
+                                                    >
+                                                        { tracker.tokenTrackerType || "Tracker Type" }
+                                                    </MenuButton>
+                                                    <MenuList>
+                                                        { trackerTypes.map( tokenTrackerType => {
+                                                            return(
+                                                                <MenuItem key={tokenTrackerType}
+                                                                    fontSize="sm"
+                                                                    onClick={() => updateTracker(
+                                                                        tracker.token?.collection,
+                                                                        { ...tracker, tokenTrackerType },
+                                                                    )}
+                                                                >
+                                                                    { tokenTrackerType }
+                                                                </MenuItem>
+                                                            )
+                                                        })}
+                                                    </MenuList>
+                                                </Menu>
+                                            </Stack>
+
+                                            {/* Above Input */}
+                                            <FormControl display='flex' alignItems='center' mt="1">                                    
+                                                <FormLabel htmlFor='above'
+                                                    mb='0'
+                                                    fontWeight={500}
+                                                    fontSize="sm"
+                                                >
+                                                    Above
+                                                </FormLabel>
+
+                                                <ButtonGroup size='sm' isAttached variant='outline'>
+                                                    <NumberInput
+                                                        id="above"
+                                                        step={1}
+                                                        precision={2}
+                                                        defaultValue={tracker?.above || 0.0}
+                                                        min={0}
+                                                        size="sm"
+                                                        disabled={tracker?.above == null}
+                                                        onChange={aboveStr => {
+                                                            const above = parseFloat( aboveStr )
+                                                            updateTracker(
+                                                                tracker.token?.collection,
+                                                                { ...tracker, above },
+                                                            )
+                                                        }}
+                                                    >
+                                                        <NumberInputField placeholder={`${tracker?.above || "None"}`}/>
+                                                        <NumberInputStepper>
+                                                            <NumberIncrementStepper />
+                                                            <NumberDecrementStepper />
+                                                        </NumberInputStepper>
+                                                    </NumberInput>
+                                                    { tracker?.above == null ?
+                                                        <IconButton aria-label='Add Above'
+                                                            ml="0.5"
+                                                            icon={<IoIosAddCircleOutline/>}
                                                             onClick={() => updateTracker(
                                                                 tracker.token?.collection,
-                                                                { ...tracker, tokenTrackerType },
+                                                                { ...tracker, above: 0.0},
                                                             )}
-                                                        >
-                                                            { tokenTrackerType }
-                                                        </MenuItem>
-                                                    )
-                                                })}
-                                            </MenuList>
-                                        </Menu>
+                                                        />
+                                                        :
+                                                        <IconButton aria-label='Remove Above'
+                                                            ml="0.5"
+                                                            icon={<IoMdClose/>}
+                                                            onClick={() => updateTracker(
+                                                                tracker.token?.collection,
+                                                                { ...tracker, above: undefined},
+                                                            )}
+                                                        />
+                                                    }
+                                                </ButtonGroup>
+                                            </FormControl>
+
+                                            {/* Below Input */}
+                                            <FormControl display='flex' alignItems='center' mt="1">                                    
+                                                <FormLabel htmlFor='below'
+                                                    mb='0'
+                                                    fontWeight={500}
+                                                    fontSize="sm"
+                                                >
+                                                    Below
+                                                </FormLabel>
+
+                                                <ButtonGroup size='sm' isAttached variant='outline'>
+                                                    <NumberInput
+                                                        id="below"
+                                                        step={1}
+                                                        precision={2}
+                                                        defaultValue={tracker?.below || 0.0}
+                                                        min={0}
+                                                        size="sm"
+                                                        disabled={tracker?.below == null}
+                                                        onChange={belowStr => {
+                                                            const below = parseFloat( belowStr )
+                                                            updateTracker(
+                                                                tracker.token?.collection,
+                                                                { ...tracker, below },
+                                                            )
+                                                        }}
+                                                    >
+                                                        <NumberInputField />
+                                                        <NumberInputStepper>
+                                                            <NumberIncrementStepper />
+                                                            <NumberDecrementStepper />
+                                                        </NumberInputStepper>
+                                                    </NumberInput>
+                                                    { tracker?.below == null ?
+                                                        <IconButton aria-label='Remove Below'
+                                                            ml="0.5"
+                                                            icon={<IoIosAddCircleOutline/>}
+                                                            onClick={() => updateTracker(
+                                                                tracker.token?.collection,
+                                                                { ...tracker, below: 0.0},
+                                                            )}
+                                                        />
+                                                        :
+                                                        <IconButton aria-label='Add Below'
+                                                            ml="0.5"
+                                                            icon={<IoMdClose/>}
+                                                            onClick={() => updateTracker(
+                                                                tracker.token?.collection,
+                                                                { ...tracker, below: undefined},
+                                                            )}
+                                                        />
+                                                    }
+                                                </ButtonGroup>
+                                            </FormControl>
+
+                                            <Box mt="4" width="max">
+                                                <Button
+                                                    isLoading={trackersSaving.get(tracker.id)}
+                                                    loadingText='Saving'
+                                                    colorScheme="facebook"
+                                                    variant="solid"
+                                                    float="right"
+                                                    onClick={ saveTokenTracker(selCollection, tracker)}
+                                                >
+                                                    Save
+                                                </Button>
+                                            </Box>
+                                        </Box>
                                     </Stack>
-
-                                    {/* Above Input */}
-                                    <FormControl display='flex' alignItems='center' mt="1">                                    
-                                        <FormLabel htmlFor='above'
-                                            mb='0'
-                                            fontWeight={500}
-                                            fontSize="sm"
-                                        >
-                                            Above
-                                        </FormLabel>
-
-                                        <ButtonGroup size='sm' isAttached variant='outline'>
-                                            <NumberInput
-                                                id="above"
-                                                step={1}
-                                                precision={2}
-                                                defaultValue={tracker?.above || 0.0}
-                                                min={0}
-                                                size="sm"
-                                                disabled={tracker?.above == null}
-                                                onChange={aboveStr => {
-                                                    const above = parseFloat( aboveStr )
-                                                    updateTracker(
-                                                        tracker.token?.collection,
-                                                        { ...tracker, above },
-                                                    )
-                                                }}
-                                            >
-                                                <NumberInputField placeholder={`${tracker?.above || "None"}`}/>
-                                                <NumberInputStepper>
-                                                    <NumberIncrementStepper />
-                                                    <NumberDecrementStepper />
-                                                </NumberInputStepper>
-                                            </NumberInput>
-                                            { tracker?.above == null ?
-                                                <IconButton aria-label='Add Above'
-                                                    ml="0.5"
-                                                    icon={<IoIosAddCircleOutline/>}
-                                                    onClick={() => updateTracker(
-                                                        tracker.token?.collection,
-                                                        { ...tracker, above: 0.0},
-                                                    )}
-                                                />
-                                                :
-                                                <IconButton aria-label='Remove Above'
-                                                    ml="0.5"
-                                                    icon={<IoMdClose/>}
-                                                    onClick={() => updateTracker(
-                                                        tracker.token?.collection,
-                                                        { ...tracker, above: undefined},
-                                                    )}
-                                                />
-                                            }
-                                        </ButtonGroup>
-                                    </FormControl>
-
-                                    {/* Below Input */}
-                                    <FormControl display='flex' alignItems='center' mt="1">                                    
-                                        <FormLabel htmlFor='below'
-                                            mb='0'
-                                            fontWeight={500}
-                                            fontSize="sm"
-                                        >
-                                            Below
-                                        </FormLabel>
-
-                                        <ButtonGroup size='sm' isAttached variant='outline'>
-                                            <NumberInput
-                                                id="below"
-                                                step={1}
-                                                precision={2}
-                                                defaultValue={tracker?.below || 0.0}
-                                                min={0}
-                                                size="sm"
-                                                disabled={tracker?.below == null}
-                                                onChange={belowStr => {
-                                                    const below = parseFloat( belowStr )
-                                                    updateTracker(
-                                                        tracker.token?.collection,
-                                                        { ...tracker, below },
-                                                    )
-                                                }}
-                                            >
-                                                <NumberInputField />
-                                                <NumberInputStepper>
-                                                    <NumberIncrementStepper />
-                                                    <NumberDecrementStepper />
-                                                </NumberInputStepper>
-                                            </NumberInput>
-                                            { tracker?.below == null ?
-                                                <IconButton aria-label='Remove Below'
-                                                    ml="0.5"
-                                                    icon={<IoIosAddCircleOutline/>}
-                                                    onClick={() => updateTracker(
-                                                        tracker.token?.collection,
-                                                        { ...tracker, below: 0.0},
-                                                    )}
-                                                />
-                                                :
-                                                <IconButton aria-label='Add Below'
-                                                    ml="0.5"
-                                                    icon={<IoMdClose/>}
-                                                    onClick={() => updateTracker(
-                                                        tracker.token?.collection,
-                                                        { ...tracker, below: undefined},
-                                                    )}
-                                                />
-                                            }
-                                        </ButtonGroup>
-                                    </FormControl>
-
-                                    <Box mt="4" width="max">
-                                        <Button
-                                            isLoading={trackersSaving.get(tracker.id)}
-                                            loadingText='Saving'
-                                            colorScheme="facebook"
-                                            variant="solid"
-                                            float="right"
-                                            onClick={ saveTokenTracker(coll, tracker)}
-                                        >
-                                            Save
-                                        </Button>
-                                    </Box>
-                                </Box>
-                            </Stack>
-                        </Stack>
-                    )
-                })}
+                                </Stack>
+                            )
+                        })}
                 </SimpleGrid>
             </Box>
-          )
-      })}
+        }
     </Box>
   )
 }
