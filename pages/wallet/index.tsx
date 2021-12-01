@@ -116,6 +116,32 @@ export default function WalletManager() {
     }
   }
 
+  const onTrackWalletAddr = async (): Promise<void> => {
+    const trackedWallets = [...user.trackedWallets, newWalletAddr]
+    if ( trackedWallets ) {
+        const user = await userService.update({ trackedWallets })
+        setNewWalletAddr("")
+        dispatch({ type: 'SET_USER', payload: user })
+        toast.success("Wallets Updated", {
+            position: toast.POSITION.TOP_CENTER
+        })
+    }
+  }
+
+  const onRemoveWalletAddr = (walletAddr: string) => async (): Promise<void> => {
+    const idx = user.trackedWallets.findIndex( addr => addr === walletAddr )
+    const trackedWallets = [
+        ...user.trackedWallets.slice(0, idx),
+        ...user.trackedWallets.slice(idx+1, user.trackedWallets.length),
+    ]
+    const updUser = await userService.update({ trackedWallets })
+    setNewWalletAddr("")
+    dispatch({ type: 'SET_USER', payload: updUser })
+    toast.success("Wallets Updated", {
+        position: toast.POSITION.TOP_CENTER
+    })
+  }
+
   const loadWallet = (tracked: ITokenTracker[], untracked: Nft[]) => {
     const allTrackers = [] as ITokenTracker[]
     const collections = []
@@ -270,17 +296,7 @@ export default function WalletManager() {
                                     flex={'1 0 auto'}
                                     _hover={{ bg: 'blue.500' }}
                                     _focus={{ bg: 'blue.500' }}
-                                    onClick={ async () => {
-                                        const trackedWallets = [...user.trackedWallets, newWalletAddr]
-                                        if ( trackedWallets ) {
-                                            const user = await userService.update({ trackedWallets })
-                                            setNewWalletAddr("")
-                                            dispatch({ type: 'SET_USER', payload: user })
-                                            toast.success("Wallets Updated", {
-                                                position: toast.POSITION.TOP_CENTER
-                                            })
-                                        }
-                                    }}
+                                    onClick={ onTrackWalletAddr }
                                 >
                                     Track
                                 </Button>
@@ -306,39 +322,27 @@ export default function WalletManager() {
                                 ))}
                             </Stack>
 
-                            <Stack direction="row">
-                                { user.trackedWallets.length > 0 &&
-                                    <Button
-                                        bg={'blue.400'}
-                                        rounded={'full'}
-                                        color={'white'}
-                                        flex={'1 0 auto'}
-                                        isLoading={ isSyncWallet }
-                                        _hover={{ bg: 'blue.500' }}
-                                        _focus={{ bg: 'blue.500' }}
-                                        onClick={async () => {
-                                            setIsSyncWallet( true )
-                                            const resp = await walletService.syncWallet()
-                                            if ( resp ) {
-                                                loadWallet( resp.tracked, resp.untracked )
-                                            }
-                                            setIsSyncWallet( false )
-                                        }}
-                                    >
-                                        Sync Wallets
-                                    </Button>
-                                }
+                            { user.trackedWallets.length > 0 &&
                                 <Button
                                     bg={'blue.400'}
                                     rounded={'full'}
                                     color={'white'}
                                     flex={'1 0 auto'}
-                                    _hover={{ bg: 'blue.500' }}
-                                    _focus={{ bg: 'blue.500' }}
+                                    isLoading={ isSyncWallet }
+                                    _hover={{ bg: 'green.500' }}
+                                    _focus={{ bg: 'green.500' }}
+                                    onClick={async () => {
+                                        setIsSyncWallet( true )
+                                        const resp = await walletService.syncWallet()
+                                        if ( resp ) {
+                                            loadWallet( resp.tracked, resp.untracked )
+                                        }
+                                        setIsSyncWallet( false )
+                                    }}
                                 >
-                                    Save Changes
+                                    Sync Wallets
                                 </Button>
-                            </Stack>
+                            }
                         </Stack>
                     </Flex>
 
@@ -381,6 +385,7 @@ export default function WalletManager() {
                                             flex={'1 0 auto'}
                                             _hover={{ bg: 'red.500' }}
                                             _focus={{ bg: 'red.500' }}
+                                            onClick={onRemoveWalletAddr( selWallet )}
                                         >
                                             Untrack Wallet
                                         </Button>
