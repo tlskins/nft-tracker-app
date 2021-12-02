@@ -9,7 +9,10 @@ import {
   IUpdateTokenTracker,
   IUpdateTokenTrackerResp,
   ITokenTracker,
+  ITokenTrackersResp,
+  IPredictTokenTrackersReq,
 } from '../types/tokens'
+import { IUser, IUserResp } from '../types/user'
 
 class WalletService {
   getWallet = async (): Promise<IGetWalletData | undefined> => {
@@ -19,6 +22,20 @@ class WalletService {
       return walletResp?.data
     } catch( err ) {
       toast.error( `Error getting wallet: ${err.response?.data?.message || 'Unknown'}`, {
+        position: toast.POSITION.TOP_CENTER,
+      })
+
+      return
+    }
+  }
+
+  deleteWallet = async ( walletAddr: string ): Promise<IUser | undefined> => {
+    try {
+      const userResp: IUserResp = await http.delete( `wallet/${walletAddr}` )
+
+      return userResp?.data?.user
+    } catch( err ) {
+      toast.error( `Error deleting wallet: ${err.response?.data?.message || 'Unknown'}`, {
         position: toast.POSITION.TOP_CENTER,
       })
 
@@ -49,6 +66,22 @@ class WalletService {
       return trackerResp?.data.tracker
     } catch( err ) {
       toast.error( `Error updating tracker settings: ${err.response?.data?.message || 'Unknown'}`, {
+        position: toast.POSITION.TOP_CENTER,
+      })
+
+      return
+    }
+  }
+
+  predictTokenTracker = async (
+    req: IPredictTokenTrackersReq,
+  ): Promise<[ITokenTracker] | undefined> => {
+    try {
+      const resp: ITokenTrackersResp = await http.post( 'alert-token-trackers/predict', req )
+
+      return resp?.data.trackers
+    } catch( err ) {
+      toast.error( `Error predicting: ${err.response?.data?.message || 'Unknown'}`, {
         position: toast.POSITION.TOP_CENTER,
       })
 

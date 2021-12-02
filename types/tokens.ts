@@ -29,6 +29,20 @@ export interface IUpdateTokenTrackerData {
   tracker: ITokenTracker;
 }
 
+
+export interface IPredictTokenTrackersReq {
+  collection: string;
+  ids: string[];
+}
+
+export interface ITokenTrackersResp {
+  data: ITokenTrackersData
+}
+
+export interface ITokenTrackersData {
+  trackers: [ITokenTracker]
+}
+
 // types
 
 export interface IToken {
@@ -45,7 +59,7 @@ export interface IToken {
   rarity?: string;
   floorPrice?: number;
   suggestedPrice?: number;
-  lastSuggestedAt?: string;
+  lastCalcAt?: string;
 
   attributes: [ITokenAttribute];
   topAttributes: [ITokenAttribute];

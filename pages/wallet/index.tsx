@@ -42,6 +42,7 @@ import { globalContext } from '../../store'
 import WalletService from '../../services/wallet.service'
 import userService from '../../services/user.service'
 import walletService from '../../services/wallet.service'
+import Moment from 'moment'
 
 
 export default function WalletManager() {
@@ -56,7 +57,7 @@ export default function WalletManager() {
 
   // trackers
   const [ allTrackers, setAllTrackers ] = useState([] as ITokenTracker[])
-  const [ tokTrksMap, setTokTrackers ] = useState(new Map() as Map<string, ITokenTracker[]>)
+  const [ tokTrksMap, setTokTrksMap ] = useState(new Map() as Map<string, ITokenTracker[]>)
   const [ untrackedNfts, setUntrackedNfts ] = useState([] as Nft[])
   const [ collections, setCollections ] = useState([] as string[])
   const [ selCollection, setSelCollection ] = useState("")
@@ -79,7 +80,7 @@ export default function WalletManager() {
   const [ mostVal, setMostVal ] = useState(undefined as ITokenTracker | undefined)
 
   useEffect(() => {
-    if ( !walletLoaded && user ) {
+    if ( !walletLoaded && user && userIsActive( user ) ) {
         getWallet()
     }
     if ( user && user.trackedWallets?.length > 0 ) {
@@ -129,42 +130,94 @@ export default function WalletManager() {
   }
 
   const onRemoveWalletAddr = (walletAddr: string) => async (): Promise<void> => {
-    const idx = user.trackedWallets.findIndex( addr => addr === walletAddr )
-    const trackedWallets = [
-        ...user.trackedWallets.slice(0, idx),
-        ...user.trackedWallets.slice(idx+1, user.trackedWallets.length),
-    ]
-    const updUser = await userService.update({ trackedWallets })
-    setNewWalletAddr("")
-    dispatch({ type: 'SET_USER', payload: updUser })
-    toast.success("Wallets Updated", {
-        position: toast.POSITION.TOP_CENTER
-    })
+    const updUser = await walletService.deleteWallet(walletAddr)
+
+    if ( updUser ) {
+        setNewWalletAddr("")
+        dispatch({ type: 'SET_USER', payload: updUser })
+        toast.success("Wallets Updated", {
+            position: toast.POSITION.TOP_CENTER
+        })
+        getWallet()
+    }
+  }
+
+  const onSyncWallet = async (): Promise<void> => {
+    setIsSyncWallet( true )
+    const resp = await walletService.syncWallet()
+    if ( resp ) {
+        loadWallet( resp.tracked, resp.untracked )
+    }
+    setIsSyncWallet( false )
   }
 
   const loadWallet = (tracked: ITokenTracker[], untracked: Nft[]) => {
     const allTrackers = [] as ITokenTracker[]
     const collections = []
     const tokTrksMap = new Map<string, ITokenTracker[]>();
+    const procTrksMap = new Map<string, ITokenTracker[]>();
+    const cutoff = Moment().add(-2, "hour")
     tracked.forEach( tracker => {
         const coll = tracker.token?.collection
-        if ( coll ) {
-            if ( !tokTrksMap.get(coll) ) {
-                tokTrksMap.set(coll, [])
-                collections.push(coll)
-            }
-            const updTrackers = tokTrksMap.get(coll)
-            tokTrksMap.set(coll, [...updTrackers, tracker])
-            allTrackers.push(tracker)
+        if ( !tokTrksMap.get(coll) ) {
+            tokTrksMap.set(coll, [])
+            collections.push(coll)
         }
+        const updTrackers = tokTrksMap.get(coll)
+        tokTrksMap.set(coll, [...updTrackers, tracker])
+        if ( !tracker.token?.lastCalcAt || Moment(tracker.token?.lastCalcAt).isBefore(cutoff)) {
+            const procTrks = procTrksMap.get(coll)
+            procTrksMap.set(coll, [...(procTrks || []), tracker])    
+        }
+        allTrackers.push(tracker)
     })
 
     setAllTrackers( allTrackers )
     setCollections( collections )
     setSelCollection( collections.length > 0 ? collections[0] : "" )
-    setTokTrackers( tokTrksMap )
+    setTokTrksMap( tokTrksMap )
     setUntrackedNfts( untracked )
     setWalletLoaded( true )
+    predictTrackers( procTrksMap, allTrackers, tokTrksMap )
+  }
+
+  const predictTrackers = async (
+      procTrksMap: Map<string, ITokenTracker[]>,
+      allTrackers: ITokenTracker[],
+      tokTrksMap: Map<string, ITokenTracker[]>,
+    ): Promise<void> => {
+    let newAllTrackers = [...allTrackers]
+    let newTokTrksMap = new Map(tokTrksMap)
+    for (const coll of Array.from(procTrksMap.keys())) {
+        const trackers = procTrksMap.get(coll)
+        const updTrks = await walletService.predictTokenTracker({ collection: coll, ids: trackers.map( t => t.id )})
+        if ( updTrks ) {
+            updTrks.forEach( trk => {
+                console.log('tracker', trk.id)
+                // update in all trackers
+                const allIdx = allTrackers.findIndex( t => t.id === trk.id )
+                console.log('alltrackers', allIdx)
+                newAllTrackers = [
+                    ...allTrackers.slice(0, allIdx),
+                    trk,
+                    ...allTrackers.slice(allIdx+1, allTrackers.length)
+                ]
+
+                // update in trackers map
+                let collTrks = procTrksMap.get(coll)
+                const collTrksIdx = collTrks.findIndex( t => t.id === trk.id )
+                console.log('collTrks', allIdx)
+                collTrks = [
+                    ...collTrks.slice(0, collTrksIdx),
+                    trk,
+                    ...collTrks.slice(collTrksIdx+1, allTrackers.length)
+                ]
+                newTokTrksMap.set(coll, collTrks)
+            })
+        }
+    }
+    setAllTrackers( newAllTrackers )
+    setTokTrksMap( new Map(newTokTrksMap) )
   }
 
   const updateTracker = (coll: string, tracker: ITokenTracker) => {
@@ -175,7 +228,7 @@ export default function WalletManager() {
         {...tracker},
         ...trackers.slice(idx+1, trackers.length)
     ]))
-    setTokTrackers(newTrks)
+    setTokTrksMap(newTrks)
   }
 
   const saveTokenTracker = (coll: string, tracker: ITokenTracker) => async(): Promise<void> => {
@@ -226,11 +279,9 @@ export default function WalletManager() {
         updTracker,
         ...trackers.slice(idx+1, trackers.length)
     ]))
-    setTokTrackers(newTrks)
+    setTokTrksMap(newTrks)
     setTrackersSaving(new Map(trackersSaving.set(tracker.id, false)))
   }
-
-  console.log('tokTrksMap', tokTrksMap)
 
   return (
     <Box>
@@ -240,7 +291,7 @@ export default function WalletManager() {
         }
       </Box>
 
-      { walletLoaded && 
+      { (walletLoaded && user) &&
             <Box p={4}>
                 <Flex direction="row" justify={'center'}>
                     {/* Wallets Manager */}
@@ -276,7 +327,7 @@ export default function WalletManager() {
                             <Stack spacing={4} direction={{ base: 'column', md: 'row' }} w={'full'}>
                                 <Input
                                     type={'text'}
-                                    placeholder={'wallet address'}
+                                    placeholder={'Wallet Address'}
                                     color={useColorModeValue('gray.800', 'gray.200')}
                                     bg={useColorModeValue('gray.100', 'gray.600')}
                                     rounded={'full'}
@@ -331,14 +382,7 @@ export default function WalletManager() {
                                     isLoading={ isSyncWallet }
                                     _hover={{ bg: 'green.500' }}
                                     _focus={{ bg: 'green.500' }}
-                                    onClick={async () => {
-                                        setIsSyncWallet( true )
-                                        const resp = await walletService.syncWallet()
-                                        if ( resp ) {
-                                            loadWallet( resp.tracked, resp.untracked )
-                                        }
-                                        setIsSyncWallet( false )
-                                    }}
+                                    onClick={ onSyncWallet }
                                 >
                                     Sync Wallets
                                 </Button>
@@ -445,62 +489,63 @@ export default function WalletManager() {
                 </Flex>
 
                 {/* Collection Summary */}
-                <Flex
-                    w={'full'}
-                    backgroundSize={'cover'}
-                    backgroundPosition={'center center'}
-                    mb="4"
-                >
-                    <VStack
+                { selCollection &&
+                    <Flex
                         w={'full'}
-                        justify={'center'}
-                        px={4}
-                        py={4}
-                        bgGradient={'linear(to-r, blue.500, transparent)'}
+                        backgroundSize={'cover'}
+                        backgroundPosition={'center center'}
+                        mb="4"
                     >
-                        {/* <Heading fontSize="lg" color="white" textDecoration="underline">
-                            { coll }
-                        </Heading> */}
-
-                        <Menu>
-                            <MenuButton as={Button}
-                                rightIcon={<AiOutlineDown />}
-                                fontSize="sm"
-                                mb="4"
-                            >
-                                { selCollection }
-                            </MenuButton>
-                            <MenuList>
-                                { collections.map( coll => {
-                                    return(
-                                        <MenuItem key={coll}
-                                            fontSize="sm"
-                                            onClick={() => setSelCollection(coll)}
-                                        >
-                                            { coll }
-                                        </MenuItem>
-                                    )
-                                })}
-                            </MenuList>
-                        </Menu>
-
-                        <SimpleGrid
-                            columns={2}
-                            spacingX='8'
-                            px='2'
-                            fontWeight={500}
-                            fontSize="sm"
-                            color="white"
+                        <VStack
+                            w={'full'}
+                            justify={'center'}
+                            px={4}
+                            py={4}
+                            bgGradient={'linear(to-r, blue.500, transparent)'}
                         >
-                            <Text>Count</Text>
-                            <Text>{selTrackers.length}</Text>
-                            <Text>Total Value @ Floor</Text>
-                            <Text>{ selFloorSum.toFixed( 2 ) } SOL</Text>
-                            <Text>Total Value @ Suggested Price</Text>
-                            <Text>{ sellSuggSum.toFixed( 2 ) } SOL</Text>
-                        </SimpleGrid>
-                    </VStack>
-                </Flex>
+                            <Menu>
+                                <MenuButton as={Button}
+                                    rightIcon={<AiOutlineDown />}
+                                    fontSize="sm"
+                                    mb="4"
+                                >
+                                    { selCollection }
+                                </MenuButton>
+                                <MenuList>
+                                    { collections.map( coll => {
+                                        return(
+                                            <MenuItem key={coll}
+                                                fontSize="sm"
+                                                onClick={() => setSelCollection(coll)}
+                                            >
+                                                { coll }
+                                            </MenuItem>
+                                        )
+                                    })}
+                                </MenuList>
+                            </Menu>
+
+                            <SimpleGrid
+                                columns={2}
+                                spacingX='8'
+                                px='2'
+                                fontWeight={500}
+                                fontSize="sm"
+                                color="white"
+                            >
+                                <Text>Count</Text>
+                                <Text>{selTrackers.length}</Text>
+                                <Text>Active Alerts</Text>
+                                <Text>{selTrackers.filter( alert => alert.active ).length}</Text>
+                                <Text>Total Value @ Floor</Text>
+                                <Text>{ selFloorSum.toFixed( 2 ) } SOL</Text>
+                                <Text>Total Value @ Suggested Price</Text>
+                                <Text>{ sellSuggSum.toFixed( 2 ) } SOL</Text>
+                            </SimpleGrid>
+                        </VStack>
+                    </Flex>
+                }
+
 
                 {/* Collection Tokens  */}
                 <SimpleGrid columns={3} spacing={7}>
@@ -508,7 +553,7 @@ export default function WalletManager() {
                         .sort((a, b) => b.token?.suggestedPrice - a.token?.suggestedPrice )
                         .map((tracker, j) => {
                             return(
-                                <Stack key={j}
+                                <Stack key={tracker.id}
                                     borderRadius="md"
                                     boxShadow="md"
                                     p="2"
@@ -542,6 +587,8 @@ export default function WalletManager() {
                                                 <Text> #{tracker.token?.rank || "?"} </Text>
                                                 <Text>Wallet</Text>
                                                 <Text>{ tracker.walletAddress.slice(0,6) }...</Text>
+                                                <Text> Updated </Text>
+                                                <Text> { tracker.token?.lastCalcAt ? Moment( tracker.token?.lastCalcAt ).format('lll') : "Never" } </Text>
                                             </SimpleGrid>
                                         </Flex>
 

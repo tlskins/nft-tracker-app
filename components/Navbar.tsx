@@ -134,8 +134,8 @@ export default function Navbar() {
     onCloseProfile()
     dispatch({ type: 'SET_USER', payload: undefined })
     toast.success("Goodbye!", {
-        position: toast.POSITION.TOP_CENTER
-      })
+      position: toast.POSITION.TOP_CENTER
+    })
   }
 
   const createUser = async ({ walletPublicKey, discordName }: IUser, verifyCode: number): Promise<boolean> => {
