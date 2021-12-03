@@ -354,7 +354,7 @@ export default function WalletManager() {
                             </Stack>
 
                             <Stack spacingX={4} direction="column" w={'full'}>
-                                { user.trackedWallets.map( wallet => (
+                                { (user.trackedWallets || []).map( wallet => (
                                     <Box
                                         rounded={'full'}
                                         border={0}
@@ -373,7 +373,7 @@ export default function WalletManager() {
                                 ))}
                             </Stack>
 
-                            { user.trackedWallets.length > 0 &&
+                            { user.trackedWallets?.length > 0 &&
                                 <Button
                                     bg={'blue.400'}
                                     rounded={'full'}
