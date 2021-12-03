@@ -106,7 +106,7 @@ export default function WalletManager() {
         return sum
     }, 0.0) )
     setTtlTracked( walletTrks.length )
-    setTtlUntracked( untrackedNfts.filter( nft => nft.walletAddress === selWallet ).length )
+    setTtlUntracked( (untrackedNfts || []).filter( nft => nft.walletAddress === selWallet ).length )
   }, [ selWallet, allTrackers ])
 
   const getWallet = async (): Promise<void> => {
