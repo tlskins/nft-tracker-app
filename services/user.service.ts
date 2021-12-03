@@ -7,7 +7,6 @@ import {
   IUpdateUserProfile,
   ICreateUserReq,
   IUserResp,
-  ILanding,
   ILandingResp,
   IPricingResp,
   IPricing,
@@ -18,7 +17,7 @@ class UserService {
     try {
       const landingResp: ILandingResp = await http.get( 'landing' )
 
-      return landingResp?.data
+      return landingResp?.data?.collections
     } catch( err ) {
       toast.error( `Error getting landing data: ${err.response?.data?.message || 'Unknown'}`, {
         position: toast.POSITION.TOP_CENTER,
