@@ -7,17 +7,18 @@ import {
   IUpdateUserProfile,
   ICreateUserReq,
   IUserResp,
+  ILanding,
   ILandingResp,
   IPricingResp,
   IPricing,
 } from '../types/user'
 
 class UserService {
-  getLanding = async (): Promise<Map<string, string> | undefined> => {
+  getLanding = async (): Promise<ILanding | undefined> => {
     try {
       const landingResp: ILandingResp = await http.get( 'landing' )
 
-      return landingResp?.data?.collections
+      return landingResp?.data
     } catch( err ) {
       toast.error( `Error getting landing data: ${err.response?.data?.message || 'Unknown'}`, {
         position: toast.POSITION.TOP_CENTER,
