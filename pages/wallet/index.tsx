@@ -553,7 +553,7 @@ export default function WalletManager() {
                         .sort((a, b) => b.token?.suggestedPrice - a.token?.suggestedPrice )
                         .map((tracker, j) => {
                             return(
-                                <Stack key={tracker.id}
+                                <Stack key={tracker.id + "-" + tracker.token?.lastCalcAt || ""}
                                     borderRadius="md"
                                     boxShadow="md"
                                     p="2"
