@@ -51,8 +51,8 @@ import { globalContext } from '../store'
 import SendPaymentToTreasury from './SendPaymentToTreasury'
 import UserService from '../services/user.service'
 import {
+  ICollectionMapping,
   IUser,
-  ILanding,
   userIsActive,
   userTrialCutoff,
 } from '../types/user'
@@ -63,7 +63,7 @@ export default function Navbar() {
   const { globalState, dispatch } = useContext( globalContext )
   const { publicKey } = useWallet()
   const walletPublicKey = publicKey?.toString()
-  const { user, landing } = globalState
+  const { user, collMaps } = globalState
   const {
     isOpen: isProfileOpen,
     onOpen: onOpenProfile,
@@ -81,15 +81,16 @@ export default function Navbar() {
   }, [ publicKey ])
 
   useEffect(() => {
-    if ( !landing ) {
+    if ( !collMaps ) {
       loadLanding()
     }
-  }, [ landing ])
+  }, [ collMaps ])
 
   const loadLanding = async (): Promise<void> => {
-      const landing = await UserService.getLanding()
-      if ( landing ) {
-        dispatch({ type: 'SET_LANDING', payload: landing })
+      const collMaps = await UserService.getCollMappings()
+      console.log('landing', collMaps)
+      if ( collMaps ) {
+        dispatch({ type: 'SET_LANDING', payload: collMaps })
       }
   }
 
@@ -449,14 +450,26 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
     )
   }
 
+
+  const filterNav = (rgx: RegExp) => (child: NavItem): boolean => {
+    if ( child.label.match(rgx)) {
+      return true
+    }
+    return false
+  }
+
   const DesktopNav = () => {
     const linkColor = useColorModeValue('gray.600', 'gray.200');
     const linkHoverColor = useColorModeValue('gray.800', 'white');
     const popoverContentBgColor = useColorModeValue('white', 'gray.800');
 
     const { globalState, dispatch } = useContext( globalContext )
-    const { landing } = globalState
-    const navItems = getNavItems(landing)
+    const { collMaps } = globalState
+    const [ search, setSearch ] = useState("")
+    const rgx = new RegExp(search, 'ig')
+    const navItems = getNavItems(collMaps)
+
+    console.log('collmaps', collMaps)
   
     return (
       <Stack direction={'row'} spacing={4}>
@@ -487,7 +500,13 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
                   rounded={'xl'}
                   minW={'sm'}>
                   <Stack>
-                    {navItem.children.map((child) => (
+                    { navItem.children.length > 3 &&
+                      <Input variant='flushed'
+                        placeholder='Search'
+                        onChange={e => setSearch(e.target.value)}
+                      />
+                    }
+                    {navItem.children.filter( filterNav(rgx) ).map((child) => (
                       <DesktopSubNav key={child.label} {...child} />
                     ))}
                   </Stack>
@@ -539,8 +558,8 @@ function ProfileDrawer({ isOpen, user, onClose, onCreateUser, onSignOut }: {
 
   const MobileNav = () => {
     const { globalState, dispatch } = useContext( globalContext )
-    const { landing } = globalState
-    const navItems = getNavItems(landing)
+    const { collMaps } = globalState
+    const navItems = getNavItems(collMaps)
 
     return (
       <Stack
@@ -615,14 +634,14 @@ const MobileNavItem = ({ label, children, href }: NavItem ) => {
     href?: string;
   }
 
-const getNavItems = (landing: ILanding): Array<NavItem> =>  {
+const getNavItems = (collMaps: [ICollectionMapping]): Array<NavItem> =>  {
   return [
     {
       label: 'Collections',
-      children: !landing ? [] : Object.keys( landing.collections ).map( key => {
+      children: (collMaps || []).map( map => {
         return({
-          label: key,
-          href: landing.collections[key],
+          label: map.collection,
+          href: `/collections/${ map.apiPath }`,
         })
       }),
     },

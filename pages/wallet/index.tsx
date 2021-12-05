@@ -340,21 +340,6 @@ export default function WalletManager() {
                                         Get a Discord DM from the Degen Bible Bot whenever your NFT reaches the specified alert range
                                     </ListItem>
                                 </OrderedList>
-
-                                {/* <List spacing="0.5" textAlign="center" px={12} fontSize="sm">
-                                    <ListItem>
-                                        Add wallet addresses to track
-                                    </ListItem>
-                                    <ListItem>
-                                        Sync wallet and anytime you wallet's collections change
-                                    </ListItem>
-                                    <ListItem>
-                                        Set alert ranges by floor or suggested price for each NFT you want to track
-                                    </ListItem>
-                                    <ListItem>
-                                        Get a DM from the Degen Bible Bot whenever your NFT reaches the specified alert range
-                                    </ListItem>
-                                </List> */}
                             </Stack>
 
                             <Stack spacing={4} direction={{ base: 'column', md: 'row' }} w={'full'}>

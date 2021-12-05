@@ -36,11 +36,21 @@ export const userIsActive = ( user?: IUser ): boolean => {
 }
 
 export interface ILandingResp {
-    data: ILanding;
-  }
-export interface ILanding {
-    collections: Map<string, string>;
-  }
+  data: ILandingData;
+}
+
+export interface ILandingData {
+  collections: [ICollectionMapping];
+}
+export interface ICollectionMapping {
+  id: string;
+  collection: string;
+  rankType: string;
+  apiPath: string;
+  channelId: string;
+  totalSupply: number;
+  updateAuthority: string;
+}
 
 export interface IPricingResp {
     data: IPricingData;

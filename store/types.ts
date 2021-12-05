@@ -1,9 +1,9 @@
 import { Dispatch } from 'react'
-import { IUser, ILanding } from '../types/user'
+import { IUser, ICollectionMapping } from '../types/user'
 
 export interface GlobalStateInterface {
   user?: IUser;
-  landing?: ILanding;
+  collMaps?: [ICollectionMapping];
   persistenceType: string;
 }
 

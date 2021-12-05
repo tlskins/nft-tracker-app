@@ -11,7 +11,7 @@ const Reducer = ( state: GlobalStateInterface, action: ActionType ): any => {
   case 'SET_LANDING':
     return {
       ...state,
-      landing: action.payload,
+      collMaps: action.payload,
     }
   case 'PURGE_STATE':
     return initialState
