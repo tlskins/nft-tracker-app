@@ -8,6 +8,7 @@ import {
   Flex,
   FormControl,
   FormLabel,
+  List,
   Icon,
   IconButton,
   Input,
@@ -16,6 +17,8 @@ import {
   Stack,
   Switch,
   Container,
+  OrderedList,
+  ListItem,
   useColorModeValue,
   SimpleGrid,
   Image,
@@ -206,11 +209,11 @@ export default function WalletManager() {
                 // update in trackers map
                 let collTrks = procTrksMap.get(coll)
                 const collTrksIdx = collTrks.findIndex( t => t.id === trk.id )
-                console.log('collTrks', allIdx)
+                console.log('collTrks', collTrksIdx)
                 collTrks = [
                     ...collTrks.slice(0, collTrksIdx),
                     trk,
-                    ...collTrks.slice(collTrksIdx+1, allTrackers.length)
+                    ...collTrks.slice(collTrksIdx+1, collTrks.length)
                 ]
                 newTokTrksMap.set(coll, collTrks)
             })
@@ -322,6 +325,36 @@ export default function WalletManager() {
                                 <Text fontSize={'lg'} color={'gray.500'}>
                                     Alerts when your portfolio changes!
                                 </Text>
+
+                                <OrderedList fontSize="sm" textAlign="left" maxWidth="sm" pl="2" color={'gray.500'}>
+                                    <ListItem>
+                                    Add wallet addresses to track
+                                    </ListItem>
+                                    <ListItem>
+                                        Sync wallet and anytime your wallet's collections change
+                                    </ListItem>
+                                    <ListItem>
+                                        Set alert thresholds by floor or suggested price for each NFT you want to track
+                                    </ListItem>
+                                    <ListItem>
+                                        Get a Discord DM from the Degen Bible Bot whenever your NFT reaches the specified alert range
+                                    </ListItem>
+                                </OrderedList>
+
+                                {/* <List spacing="0.5" textAlign="center" px={12} fontSize="sm">
+                                    <ListItem>
+                                        Add wallet addresses to track
+                                    </ListItem>
+                                    <ListItem>
+                                        Sync wallet and anytime you wallet's collections change
+                                    </ListItem>
+                                    <ListItem>
+                                        Set alert ranges by floor or suggested price for each NFT you want to track
+                                    </ListItem>
+                                    <ListItem>
+                                        Get a DM from the Degen Bible Bot whenever your NFT reaches the specified alert range
+                                    </ListItem>
+                                </List> */}
                             </Stack>
 
                             <Stack spacing={4} direction={{ base: 'column', md: 'row' }} w={'full'}>

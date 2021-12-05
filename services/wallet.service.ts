@@ -1,3 +1,4 @@
+import moment, { Moment } from 'moment'
 import { toast } from 'react-toastify'
 
 import http from '../http-common'
@@ -44,14 +45,22 @@ class WalletService {
   }
 
   syncWallet = async (): Promise<ISyncWalletData | undefined> => {
+    const startAt: moment.Moment = moment()
     try {
       const walletResp: ISyncWalletResp = await http.post( 'wallet/sync' )
 
       return walletResp?.data
     } catch( err ) {
-      toast.error( `Error syncing wallet: ${err.response?.data?.message || 'Unknown'}`, {
-        position: toast.POSITION.TOP_CENTER,
-      })
+      if ( moment().diff( startAt, 'seconds' ) > 10 ) {
+        toast.error( 'Syncing timed out. Please try again in a few minutes.', {
+          position: toast.POSITION.TOP_CENTER,
+        })
+      } else {
+        toast.error( `Error syncing wallet: ${err.response?.data?.message || 'Unknown'}`, {
+          position: toast.POSITION.TOP_CENTER,
+        })
+
+      }
 
       return
     }
